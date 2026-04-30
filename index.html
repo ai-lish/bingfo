@@ -13,10 +13,10 @@
   <title>冰火大戰 Ice & Fire</title>
   <style>
     :root {
-      --ice-1: #a8edea;
+      --ice-1: #0077b6;
       --ice-2: #00b4d8;
       --ice-3: #0077b6;
-      --fire-1: #ff9f1c;
+      --fire-1: #c2410c;
       --fire-2: #ff6b35;
       --fire-3: #e63946;
       --purple: #c084fc;
@@ -79,7 +79,7 @@
     .play-card:hover{transform:perspective(1000px) rotateY(12deg) rotateX(-4deg) translateY(-8px);box-shadow:-8px 8px 24px rgba(0,0,0,0.5),0 0 20px var(--card-glow)}
     .pc-ice{background:linear-gradient(145deg,#e0f4f8,#d0eef5);border:1.5px solid rgba(168,237,234,0.6);color:var(--ice-1);box-shadow:0 4px 16px rgba(0,180,216,0.2),inset 0 1px 0 rgba(0,0,0,0.08);--card-glow:rgba(0,180,216,0.4)}
     .pc-fire{background:linear-gradient(145deg,#fff0e8,#f5e0d0);border:1.5px solid rgba(255,159,28,0.6);color:var(--fire-1);box-shadow:0 4px 16px rgba(255,107,53,0.2),inset 0 1px 0 rgba(0,0,0,0.08);--card-glow:rgba(255,107,53,0.4)}
-    .pc-special{background:linear-gradient(145deg,#f0e8ff,#e8dff5);border:1.5px solid rgba(192,132,252,0.6);color:var(--purple);font-size:0.68rem;text-align:center;line-height:1.3;box-shadow:0 4px 16px rgba(192,132,252,0.2),inset 0 1px 0 rgba(0,0,0,0.08);--card-glow:rgba(192,132,252,0.4)}
+    .pc-special{background:linear-gradient(145deg,#f0e8ff,#e8dff5);border:1.5px solid rgba(128,0,200,0.6);color:var(--purple);font-size:0.68rem;text-align:center;line-height:1.3;box-shadow:0 4px 16px rgba(192,132,252,0.2),inset 0 1px 0 rgba(0,0,0,0.08);--card-glow:rgba(192,132,252,0.4)}
     .demo-section{background:linear-gradient(135deg,rgba(0,180,216,0.04),rgba(255,107,53,0.04));border:1px solid rgba(255,255,255,0.1);border-radius:20px;padding:28px;margin-bottom:16px}
     .demo-title{font-size:1rem;font-weight:700;margin-bottom:6px}
     .demo-subtitle{font-size:0.82rem;color:var(--text-muted);margin-bottom:20px}
@@ -495,7 +495,7 @@ window.addEventListener('scroll',()=>{
 // Particle burst
 function burstParticles(x,y,type){
   const c=document.getElementById('particlesContainer');
-  const colors=type==='ice'?['#a8edea','#00b4d8','#0077b6','#ffffff']:['#ff9f1c','#ff6b35','#e63946','#ffffff'];
+  const colors=type==='ice'?['#0077b6','#00b4d8','#0077b6','#ffffff']:['#c2410c','#ff6b35','#e63946','#ffffff'];
   for(let i=0;i<14;i++){
     const p=document.createElement('div');
     p.className='particle';
