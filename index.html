@@ -113,6 +113,8 @@
     .btn-hint{background:rgba(192,132,252,0.1);border:1px solid rgba(192,132,252,0.3);color:var(--purple)}
     .btn-hint:hover{background:rgba(192,132,252,0.18)}
     .demo-hint-box{background:rgba(192,132,252,0.07);border:1px solid rgba(192,132,252,0.2);border-radius:10px;padding:12px 16px;font-size:0.82rem;color:var(--text-muted);margin-top:10px;display:none}
+    .stats-bar{display:flex;gap:16px;flex-wrap:wrap;margin-top:14px;padding:10px 14px;background:rgba(0,0,0,0.15);border-radius:10px;font-size:0.82rem;color:var(--text-muted)}
+    .stats-bar strong{color:var(--text)}
     @keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-5px)}80%{transform:translateX(5px)}}
     .demo-total-display.invalid{animation:shake 0.4s ease}
     .steps{display:flex;flex-direction:column;gap:12px}
@@ -311,6 +313,11 @@
         <button class="demo-btn btn-hint" onclick="toggleHint()">💡 提示</button>
       </div>
       <div class="demo-hint-box" id="hintBox"></div>
+      <div class="stats-bar">
+        <span>✅ 合法：<strong id="statValid">0</strong></span>
+        <span>❌ 非法：<strong id="statInvalid">0</strong></span>
+        <span>🏆 勝利：<strong id="statWins">0</strong></span>
+      </div>
     </div>
   </section>
 
@@ -523,10 +530,14 @@ function playCard(el,val){
     display.classList.add('invalid');
     setTimeout(()=>display.classList.remove('invalid'),450);
     if(navigator.vibrate)navigator.vibrate([100,50,100]);
+    playSound('invalid');
+    const s=loadStats();s.invalid++;saveStats(s);updateStatsDisplay();
     const needed=currentTotal>0?`需要打出 < ${-currentTotal} 嘅負數牌（或剛好 ${-currentTotal}）`:`需要打出 > ${-currentTotal} 嘅正數牌（或剛好 ${Math.abs(currentTotal)}）`;
     showHintText('❌ 唔合法！'+needed);
     return;
   }
+  playSound('valid');
+  const s=loadStats();s.valid++;saveStats(s);updateStatsDisplay();
   if(navigator.vibrate)navigator.vibrate(50);
   // Particle burst at card position
   const rect=el.getBoundingClientRect();
@@ -539,6 +550,12 @@ function playCard(el,val){
   updateDisplay(currentTotal);
   updateHistory();
   if(hintVisible)showHint();
+  // Check win - all demo cards played
+  const allPlayed=document.querySelectorAll('.demo-card').length>0&&document.querySelectorAll('.demo-card.played').length===document.querySelectorAll('.demo-card').length;
+  if(allPlayed){
+    const s=loadStats();s.wins++;saveStats(s);updateStatsDisplay();
+    showHintText('🎉 恭喜！你成功出晒所有牌！');
+  }
 }
 
 function resetDemo(){
@@ -571,6 +588,43 @@ function showHint(){
 
 function showHintText(text){const el=document.getElementById('hintBox');el.textContent=text;el.style.display='block'}
 
+// Sound effects via Web Audio API
+function playSound(type){
+  try{
+    const ctx=new(window.AudioContext||window.webkitAudioContext)();
+    const osc=ctx.createOscillator();
+    const gain=ctx.createGain();
+    osc.connect(gain);gain.connect(ctx.destination);
+    if(type==='valid'){
+      osc.frequency.setValueAtTime(523,ctx.currentTime);
+      osc.frequency.setValueAtTime(659,ctx.currentTime+0.1);
+      gain.gain.setValueAtTime(0.3,ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.3);
+      osc.start(ctx.currentTime);osc.stop(ctx.currentTime+0.3);
+    }else{
+      osc.frequency.setValueAtTime(200,ctx.currentTime);
+      gain.gain.setValueAtTime(0.2,ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.2);
+      osc.start(ctx.currentTime);osc.stop(ctx.currentTime+0.2);
+    }
+  }catch(e){}
+}
+
+// Stats via localStorage
+function loadStats(){
+  try{
+    return JSON.parse(localStorage.getItem('bingohuo_stats')||'{"valid":0,"invalid":0,"wins":0}');
+  }catch(e){return{valid:0,invalid:0,wins:0}}
+}
+function saveStats(s){try{localStorage.setItem('bingohuo_stats',JSON.stringify(s))}catch(e){}}
+function updateStatsDisplay(){
+  const s=loadStats();
+  document.getElementById('statValid').textContent=s.valid;
+  document.getElementById('statInvalid').textContent=s.invalid;
+  document.getElementById('statWins').textContent=s.wins;
+}
+
+updateStatsDisplay();
 updateDisplay(currentTotal);
 
 let deferredPrompt;
