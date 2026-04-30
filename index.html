@@ -167,6 +167,8 @@
     @media(max-width:768px){.nav-tabs{position:fixed;bottom:0;left:0;right:0;max-width:100%;border-radius:0;border-top:1px solid var(--border);border-bottom:none;border-left:none;border-right:none;z-index:100;padding:8px 12px calc(8px + env(safe-area-inset-bottom));backdrop-filter:blur(20px)}.container{padding-bottom:80px}}
     @media(max-width:480px){.card-row,.demo-card-row{gap:6px}.play-card{width:44px;height:62px;font-size:0.9rem}.demo-card{width:44px;height:60px;font-size:0.9rem}.demo-number{font-size:3rem}}
     .demo-card{min-width:48px;min-height:64px}
+    :focus-visible{outline:2px solid var(--ice);outline-offset:3px;border-radius:4px}
+    .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
     .demo-btn{min-height:44px;min-width:80px}
     .install-banner{position:fixed;bottom:calc(70px + env(safe-area-inset-bottom));left:16px;right:16px;background:rgba(0,180,216,0.15);border:1px solid rgba(0,180,216,0.4);border-radius:14px;padding:12px 16px;display:none;align-items:center;gap:10px;z-index:200;backdrop-filter:blur(16px);font-size:0.85rem}
     .install-banner span{flex:1}
@@ -193,18 +195,19 @@
     <span class="badge">🃏 98 張牌</span>
     <span class="badge">📚 適合學生</span>
   </div>
-  <nav class="nav-tabs">
-    <button class="nav-tab active" onclick="scrollTo('#overview')">簡介</button>
-    <button class="nav-tab" onclick="scrollTo('#demo')">試玩</button>
-    <button class="nav-tab" onclick="scrollTo('#basic')">初階</button>
-    <button class="nav-tab" onclick="scrollTo('#advanced')">進階</button>
-    <button class="nav-tab" onclick="scrollTo('#tips')">策略</button>
+  <nav class="nav-tabs" role="navigation" aria-label="主導航">
+    <button class="nav-tab active" onclick="scrollTo('#overview')" aria-label="簡介">簡介</button>
+    <button class="nav-tab" onclick="scrollTo('#demo')" aria-label="試玩">試玩</button>
+    <button class="nav-tab" onclick="scrollTo('#basic')" aria-label="初階">初階</button>
+    <button class="nav-tab" onclick="scrollTo('#advanced')" aria-label="進階">進階</button>
+    <button class="nav-tab" onclick="scrollTo('#tips')" aria-label="策略">策略</button>
   </nav>
 </header>
 
-<main class="container">
+<main class="container" id="main-content">
 
-  <section class="section" id="overview">
+  <section class="section" id="overview" aria-labelledby="overview-title">
+    <span id="overview-title" class="sr-only">遊戲簡介</span>
     <div class="section-header">
       <span class="section-icon">🎯</span>
       <span class="section-title">遊戲簡介</span>
@@ -273,15 +276,35 @@
     <div class="demo-section">
       <div class="demo-title">點擊卡牌，體驗出牌機制</div>
       <div class="demo-subtitle">出牌必須令累積總和改變正負，或變為零。試試睇你能唔能夠出到正確嘅牌！</div>
-      <div class="demo-total-display positive" id="demoDisplay">
+      <div class="demo-total-display positive" id="demoDisplay" aria-live="polite" aria-atomic="true" aria-label="累積總和顯示">
         <div class="demo-label">累積總和</div>
         <div class="demo-number positive" id="demoNumber">+5</div>
         <div class="demo-sign-status" id="demoStatus">🧊 目前為正數 → 需要打出負數或令總和變零</div>
       </div>
       <p class="demo-cards-label">🧊 正數牌（點擊出牌）</p>
-      <div class="demo-card-row" id="posCards"></div>
+      <div class="demo-card-row" id="posCards">
+        <div class="demo-card-container"><div class="demo-card dc-ice" role="button" aria-label="+1" tabindex="0" data-val="1">+1</div></div>
+        <div class="demo-card-container"><div class="demo-card dc-ice" role="button" aria-label="+2" tabindex="0" data-val="2">+2</div></div>
+        <div class="demo-card-container"><div class="demo-card dc-ice" role="button" aria-label="+3" tabindex="0" data-val="3">+3</div></div>
+        <div class="demo-card-container"><div class="demo-card dc-ice" role="button" aria-label="+4" tabindex="0" data-val="4">+4</div></div>
+        <div class="demo-card-container"><div class="demo-card dc-ice" role="button" aria-label="+5" tabindex="0" data-val="5">+5</div></div>
+        <div class="demo-card-container"><div class="demo-card dc-ice" role="button" aria-label="+6" tabindex="0" data-val="6">+6</div></div>
+        <div class="demo-card-container"><div class="demo-card dc-ice" role="button" aria-label="+7" tabindex="0" data-val="7">+7</div></div>
+        <div class="demo-card-container"><div class="demo-card dc-ice" role="button" aria-label="+8" tabindex="0" data-val="8">+8</div></div>
+        <div class="demo-card-container"><div class="demo-card dc-ice" role="button" aria-label="+9" tabindex="0" data-val="9">+9</div></div>
+      </div>
       <p class="demo-cards-label">🔥 負數牌（點擊出牌）</p>
-      <div class="demo-card-row" id="negCards"></div>
+      <div class="demo-card-row" id="negCards">
+        <div class="demo-card-container"><div class="demo-card dc-fire" role="button" aria-label="-1" tabindex="0" data-val="-1">-1</div></div>
+        <div class="demo-card-container"><div class="demo-card dc-fire" role="button" aria-label="-2" tabindex="0" data-val="-2">-2</div></div>
+        <div class="demo-card-container"><div class="demo-card dc-fire" role="button" aria-label="-3" tabindex="0" data-val="-3">-3</div></div>
+        <div class="demo-card-container"><div class="demo-card dc-fire" role="button" aria-label="-4" tabindex="0" data-val="-4">-4</div></div>
+        <div class="demo-card-container"><div class="demo-card dc-fire" role="button" aria-label="-5" tabindex="0" data-val="-5">-5</div></div>
+        <div class="demo-card-container"><div class="demo-card dc-fire" role="button" aria-label="-6" tabindex="0" data-val="-6">-6</div></div>
+        <div class="demo-card-container"><div class="demo-card dc-fire" role="button" aria-label="-7" tabindex="0" data-val="-7">-7</div></div>
+        <div class="demo-card-container"><div class="demo-card dc-fire" role="button" aria-label="-8" tabindex="0" data-val="-8">-8</div></div>
+        <div class="demo-card-container"><div class="demo-card dc-fire" role="button" aria-label="-9" tabindex="0" data-val="-9">-9</div></div>
+      </div>
       <div class="demo-history" id="demoHistory">出牌記錄會顯示喺這裡…</div>
       <div class="demo-controls">
         <button class="demo-btn btn-reset" onclick="resetDemo()">🔄 重置</button>
@@ -454,18 +477,12 @@ function burstParticles(x,y,type){
 // Build demo cards
 const posContainer=document.getElementById('posCards');
 const negContainer=document.getElementById('negCards');
-for(let i=1;i<=9;i++){
-  const wrap=document.createElement('div');wrap.className='demo-card-container';
-  const card=document.createElement('div');card.className='demo-card dc-ice';card.textContent='+'+i;card.dataset.val=i;
-  card.addEventListener('click',function(){playCard(this,i)});
-  wrap.appendChild(card);posContainer.appendChild(wrap);
-}
-for(let i=1;i<=9;i++){
-  const wrap=document.createElement('div');wrap.className='demo-card-container';
-  const card=document.createElement('div');card.className='demo-card dc-fire';card.textContent='-'+i;card.dataset.val=-i;
-  card.addEventListener('click',function(){playCard(this,-i)});
-  wrap.appendChild(card);negContainer.appendChild(wrap);
-}
+document.querySelectorAll('.demo-card.dc-ice').forEach(card=>{
+  card.addEventListener('click',function(){playCard(this,+this.dataset.val)});
+});
+document.querySelectorAll('.demo-card.dc-fire').forEach(card=>{
+  card.addEventListener('click',function(){playCard(this,+this.dataset.val)});
+});
 
 let currentTotal=5;
 let history=[];
