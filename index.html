@@ -1,0 +1,912 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>冰火大戰 Ice & Fire</title>
+  <style>
+    :root {
+      --ice: #67e8f9;
+      --ice-glow: rgba(103,232,249,0.4);
+      --ice-dark: #0891b2;
+      --fire: #fb923c;
+      --fire-glow: rgba(251,146,60,0.4);
+      --fire-dark: #ea580c;
+      --purple: #c084fc;
+      --green: #4ade80;
+      --yellow: #fbbf24;
+      --bg: #080c10;
+      --surface: rgba(255,255,255,0.04);
+      --surface-hover: rgba(255,255,255,0.08);
+      --border: rgba(255,255,255,0.08);
+      --border-hover: rgba(255,255,255,0.18);
+      --text: #f1f5f9;
+      --text-muted: #94a3b8;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: -apple-system, 'SF Pro Display', 'Helvetica Neue', Arial, 'PingFang TC', 'Microsoft YaHei', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ══════════════════════════════════════════
+       BACKGROUND
+    ══════════════════════════════════════════ */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 80% 60% at 10% 20%, rgba(8,145,178,0.12) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 50% at 90% 80%, rgba(234,88,12,0.12) 0%, transparent 60%),
+        radial-gradient(ellipse 40% 40% at 50% 50%, rgba(192,132,252,0.04) 0%, transparent 60%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ══════════════════════════════════════════
+       HERO
+    ══════════════════════════════════════════ */
+    .hero {
+      position: relative;
+      padding: 80px 24px 60px;
+      text-align: center;
+      z-index: 1;
+    }
+
+    .hero-glow {
+      position: absolute;
+      top: 0; left: 50%; transform: translateX(-50%);
+      width: 600px; height: 300px;
+      background: radial-gradient(ellipse, rgba(103,232,249,0.1) 0%, rgba(251,146,60,0.08) 50%, transparent 70%);
+      filter: blur(40px);
+      pointer-events: none;
+    }
+
+    .hero-emoji {
+      font-size: 80px;
+      line-height: 1;
+      margin-bottom: 20px;
+      display: block;
+      animation: heroFloat 4s ease-in-out infinite;
+      filter: drop-shadow(0 0 30px rgba(103,232,249,0.5)) drop-shadow(0 0 60px rgba(251,146,60,0.3));
+    }
+
+    @keyframes heroFloat {
+      0%, 100% { transform: translateY(0) scale(1); }
+      50% { transform: translateY(-10px) scale(1.05); }
+    }
+
+    .hero h1 {
+      font-size: clamp(2.2rem, 7vw, 4rem);
+      font-weight: 900;
+      letter-spacing: 3px;
+      line-height: 1.1;
+      background: linear-gradient(90deg, var(--ice) 0%, #ffffff 45%, var(--fire) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 6px;
+    }
+
+    .hero-en {
+      font-size: 1rem;
+      color: var(--text-muted);
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      margin-bottom: 32px;
+    }
+
+    .badges {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 40px;
+    }
+
+    .badge {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      padding: 7px 18px;
+      font-size: 0.82rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      backdrop-filter: blur(12px);
+      transition: all 0.2s;
+    }
+    .badge:hover {
+      border-color: var(--border-hover);
+      color: var(--text);
+      transform: translateY(-1px);
+    }
+
+    /* Nav tabs */
+    .nav-tabs {
+      display: flex;
+      justify-content: center;
+      gap: 4px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 4px;
+      max-width: 400px;
+      margin: 0 auto;
+      backdrop-filter: blur(12px);
+    }
+    .nav-tab {
+      flex: 1;
+      padding: 9px 16px;
+      border: none;
+      border-radius: 10px;
+      background: transparent;
+      color: var(--text-muted);
+      font-size: 0.88rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.25s;
+      font-family: inherit;
+    }
+    .nav-tab.active {
+      background: linear-gradient(135deg, rgba(103,232,249,0.15), rgba(251,146,60,0.1));
+      color: var(--text);
+      border: 1px solid var(--border-hover);
+    }
+
+    /* ══════════════════════════════════════════
+       LAYOUT
+    ══════════════════════════════════════════ */
+    .container {
+      max-width: 880px;
+      margin: 0 auto;
+      padding: 0 24px 60px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .section { margin-bottom: 56px; }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 24px;
+    }
+    .section-icon {
+      font-size: 1.3rem;
+    }
+    .section-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .section-line {
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(90deg, var(--border-hover), transparent);
+    }
+
+    /* ══════════════════════════════════════════
+       GLASS CARD
+    ══════════════════════════════════════════ */
+    .glass {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      transition: border-color 0.25s, transform 0.25s, box-shadow 0.25s;
+    }
+    .glass:hover {
+      border-color: var(--border-hover);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    }
+
+    /* ══════════════════════════════════════════
+       OVERVIEW GRID
+    ══════════════════════════════════════════ */
+    .overview-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 14px;
+    }
+
+    .overview-card {
+      padding: 22px 18px;
+      border-radius: 16px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .overview-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .overview-card:hover::before { opacity: 1; }
+
+    .oc-ice { background: rgba(103,232,249,0.05); border: 1px solid rgba(103,232,249,0.2); }
+    .oc-ice::before { background: radial-gradient(ellipse at 50% 0%, rgba(103,232,249,0.12), transparent 70%); }
+    .oc-fire { background: rgba(251,146,60,0.05); border: 1px solid rgba(251,146,60,0.2); }
+    .oc-fire::before { background: radial-gradient(ellipse at 50% 0%, rgba(251,146,60,0.12), transparent 70%); }
+    .oc-purple { background: rgba(192,132,252,0.05); border: 1px solid rgba(192,132,252,0.2); }
+    .oc-purple::before { background: radial-gradient(ellipse at 50% 0%, rgba(192,132,252,0.12), transparent 70%); }
+    .oc-gold { background: rgba(251,191,36,0.05); border: 1px solid rgba(251,191,36,0.2); }
+    .oc-gold::before { background: radial-gradient(ellipse at 50% 0%, rgba(251,191,36,0.12), transparent 70%); }
+
+    .oc-emoji { font-size: 2.2rem; margin-bottom: 10px; display: block; }
+    .oc-title { font-weight: 700; font-size: 0.95rem; margin-bottom: 5px; }
+    .oc-desc { font-size: 0.8rem; color: var(--text-muted); }
+
+    /* ══════════════════════════════════════════
+       PLAYING CARDS DISPLAY
+    ══════════════════════════════════════════ */
+    .cards-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: var(--text-muted);
+      margin: 20px 0 10px;
+    }
+
+    .card-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .play-card {
+      width: 54px; height: 76px;
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.05rem; font-weight: 900;
+      cursor: default;
+      transition: transform 0.2s, box-shadow 0.2s;
+      position: relative;
+      user-select: none;
+    }
+    .play-card:hover {
+      transform: translateY(-6px) rotate(-3deg) scale(1.05);
+      z-index: 10;
+    }
+
+    .pc-ice {
+      background: linear-gradient(145deg, #0c2d3d, #0a1e2b);
+      border: 1.5px solid rgba(103,232,249,0.5);
+      color: var(--ice);
+      box-shadow: 0 4px 16px rgba(103,232,249,0.15), inset 0 1px 0 rgba(255,255,255,0.05);
+    }
+    .pc-fire {
+      background: linear-gradient(145deg, #2d1a0c, #1e0f08);
+      border: 1.5px solid rgba(251,146,60,0.5);
+      color: var(--fire);
+      box-shadow: 0 4px 16px rgba(251,146,60,0.15), inset 0 1px 0 rgba(255,255,255,0.05);
+    }
+    .pc-special {
+      background: linear-gradient(145deg, #1a0c2d, #110820);
+      border: 1.5px solid rgba(192,132,252,0.5);
+      color: var(--purple);
+      font-size: 0.68rem;
+      text-align: center;
+      line-height: 1.3;
+      box-shadow: 0 4px 16px rgba(192,132,252,0.15), inset 0 1px 0 rgba(255,255,255,0.05);
+    }
+
+    /* ══════════════════════════════════════════
+       STEPS
+    ══════════════════════════════════════════ */
+    .steps { display: flex; flex-direction: column; gap: 12px; }
+
+    .step {
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+      padding: 18px 20px;
+      border-radius: 14px;
+      transition: all 0.25s;
+    }
+    .step:hover {
+      border-color: rgba(103,232,249,0.2);
+      box-shadow: 0 0 20px rgba(103,232,249,0.05);
+    }
+
+    .step-num {
+      width: 30px; height: 30px; flex-shrink: 0;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--ice-dark), var(--ice));
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 800; font-size: 0.85rem; color: #0d1117;
+      box-shadow: 0 0 12px var(--ice-glow);
+    }
+
+    .step-body strong {
+      display: block;
+      font-size: 0.95rem;
+      margin-bottom: 3px;
+    }
+    .step-body p {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    /* ══════════════════════════════════════════
+       RULE ITEMS
+    ══════════════════════════════════════════ */
+    .rule-list { list-style: none; display: flex; flex-direction: column; gap: 1px; }
+
+    .rule-item {
+      display: flex;
+      gap: 12px;
+      padding: 12px 16px;
+      border-radius: 10px;
+      font-size: 0.9rem;
+      transition: background 0.2s;
+    }
+    .rule-item:hover { background: var(--surface-hover); }
+
+    .rule-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--ice);
+      flex-shrink: 0;
+      margin-top: 9px;
+      box-shadow: 0 0 6px var(--ice-glow);
+    }
+    .rule-dot.fire { background: var(--fire); box-shadow: 0 0 6px var(--fire-glow); }
+    .rule-dot.purple { background: var(--purple); }
+    .rule-dot.green { background: var(--green); }
+
+    /* ══════════════════════════════════════════
+       ALERT BOXES
+    ══════════════════════════════════════════ */
+    .alert {
+      display: flex;
+      gap: 12px;
+      padding: 14px 18px;
+      border-radius: 12px;
+      font-size: 0.88rem;
+      margin: 8px 0;
+    }
+    .alert-fire {
+      background: rgba(251,146,60,0.08);
+      border: 1px solid rgba(251,146,60,0.25);
+    }
+    .alert-ice {
+      background: rgba(103,232,249,0.06);
+      border: 1px solid rgba(103,232,249,0.2);
+    }
+    .alert-green {
+      background: rgba(74,222,128,0.06);
+      border: 1px solid rgba(74,222,128,0.2);
+    }
+    .alert-icon { font-size: 1.1rem; flex-shrink: 0; margin-top: 1px; }
+
+    /* ══════════════════════════════════════════
+       EXAMPLE FLOW
+    ══════════════════════════════════════════ */
+    .example-flow {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+      padding: 20px;
+      border-radius: 14px;
+      margin: 10px 0;
+    }
+
+    .ex-card {
+      width: 52px; height: 70px;
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 900; font-size: 1.1rem;
+    }
+
+    .arrow-sym { color: var(--text-muted); font-size: 1.3rem; }
+
+    .total-badge {
+      padding: 8px 16px;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 0.95rem;
+      letter-spacing: 0.5px;
+    }
+    .tb-pos { background: rgba(103,232,249,0.1); border: 1px solid rgba(103,232,249,0.3); color: var(--ice); }
+    .tb-neg { background: rgba(251,146,60,0.1); border: 1px solid rgba(251,146,60,0.3); color: var(--fire); }
+    .tb-zero { background: rgba(74,222,128,0.1); border: 1px solid rgba(74,222,128,0.3); color: var(--green); }
+
+    .example-label {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin: 6px 0 4px;
+    }
+
+    /* ══════════════════════════════════════════
+       SPECIAL CARDS
+    ══════════════════════════════════════════ */
+    .special-list { display: flex; flex-direction: column; gap: 10px; }
+
+    .sc-item {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 16px 18px;
+      border-radius: 14px;
+      transition: all 0.25s;
+    }
+    .sc-item:hover {
+      transform: translateX(4px);
+    }
+
+    .sc-pill {
+      width: 56px; height: 72px; flex-shrink: 0;
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.7rem; font-weight: 800;
+      text-align: center;
+      line-height: 1.3;
+    }
+
+    .sc-bonus { background: rgba(74,222,128,0.1); border: 1.5px solid rgba(74,222,128,0.4); color: var(--green); }
+    .sc-penalty { background: rgba(251,146,60,0.1); border: 1.5px solid rgba(251,146,60,0.4); color: var(--fire); }
+    .sc-flip { background: rgba(192,132,252,0.1); border: 1.5px solid rgba(192,132,252,0.4); color: var(--purple); }
+    .sc-zero { background: rgba(251,191,36,0.1); border: 1.5px solid rgba(251,191,36,0.4); color: var(--yellow); }
+
+    .sc-body strong { display: block; font-size: 0.92rem; margin-bottom: 3px; }
+    .sc-body span { font-size: 0.82rem; color: var(--text-muted); }
+
+    /* ══════════════════════════════════════════
+       QUICK REFERENCE
+    ══════════════════════════════════════════ */
+    .quick-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+      gap: 12px;
+    }
+
+    .quick-card {
+      padding: 20px 18px;
+      border-radius: 14px;
+      text-align: center;
+    }
+
+    .quick-em { font-size: 1.8rem; margin-bottom: 8px; }
+    .quick-title { font-weight: 700; font-size: 0.9rem; margin-bottom: 5px; }
+    .quick-desc { font-size: 0.8rem; color: var(--text-muted); }
+
+    /* ══════════════════════════════════════════
+       SECTION DIVIDER
+    ══════════════════════════════════════════ */
+    .divider {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--border-hover), transparent);
+      margin: 40px 0;
+    }
+
+    /* ══════════════════════════════════════════
+       FOOTER
+    ══════════════════════════════════════════ */
+    footer {
+      text-align: center;
+      padding: 32px 24px;
+      color: var(--text-muted);
+      font-size: 0.78rem;
+      border-top: 1px solid var(--border);
+      position: relative;
+      z-index: 1;
+      letter-spacing: 0.5px;
+    }
+
+    /* ══════════════════════════════════════════
+       RESPONSIVE
+    ══════════════════════════════════════════ */
+    @media (max-width: 600px) {
+      .hero { padding: 60px 16px 40px; }
+      .container { padding: 0 16px 48px; }
+      .overview-grid { grid-template-columns: 1fr 1fr; }
+      .quick-grid { grid-template-columns: 1fr 1fr; }
+      .hero-emoji { font-size: 60px; }
+    }
+
+    /* ══════════════════════════════════════════
+       ENTRANCE ANIMATIONS
+    ══════════════════════════════════════════ */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .section {
+      animation: fadeUp 0.5s ease both;
+    }
+    .section:nth-child(1) { animation-delay: 0.1s; }
+    .section:nth-child(2) { animation-delay: 0.2s; }
+    .section:nth-child(3) { animation-delay: 0.3s; }
+    .section:nth-child(4) { animation-delay: 0.4s; }
+    .section:nth-child(5) { animation-delay: 0.5s; }
+  </style>
+</head>
+<body>
+
+<!-- Hero -->
+<header class="hero">
+  <div class="hero-glow"></div>
+  <span class="hero-emoji">🧊🔥</span>
+  <h1>冰火大戰</h1>
+  <p class="hero-en">Ice &amp; Fire — Integer Card Strategy Game</p>
+  <div class="badges">
+    <span class="badge">👥 2–6 人</span>
+    <span class="badge">🧮 整數四則運算</span>
+    <span class="badge">⚡ 鬥快出牌</span>
+    <span class="badge">🃏 98 張牌</span>
+    <span class="badge">📚 適合學生</span>
+  </div>
+  <nav class="nav-tabs" role="tablist">
+    <button class="nav-tab active" onclick="scrollTo('#basic')">初階玩法</button>
+    <button class="nav-tab" onclick="scrollTo('#advanced')">進階玩法</button>
+    <button class="nav-tab" onclick="scrollTo('#quick')">快速參考</button>
+  </nav>
+</header>
+
+<main class="container">
+
+  <!-- Overview -->
+  <section class="section" id="overview">
+    <div class="section-header">
+      <span class="section-icon">🎯</span>
+      <span class="section-title">遊戲簡介</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="overview-grid">
+      <div class="overview-card oc-ice">
+        <span class="oc-emoji">🧊</span>
+        <div class="oc-title">正數牌（冰）</div>
+        <div class="oc-desc">+1 至 +9<br>令總和移向正數</div>
+      </div>
+      <div class="overview-card oc-fire">
+        <span class="oc-emoji">🔥</span>
+        <div class="oc-title">負數牌（火）</div>
+        <div class="oc-desc">-1 至 -9<br>令總和移向負數</div>
+      </div>
+      <div class="overview-card oc-purple">
+        <span class="oc-emoji">⭐</span>
+        <div class="oc-title">特殊牌</div>
+        <div class="oc-desc">18 張進階牌<br>特殊效果</div>
+      </div>
+      <div class="overview-card oc-gold">
+        <span class="oc-emoji">🏆</span>
+        <div class="oc-title">勝利目標</div>
+        <div class="oc-desc">最快出完<br>所有手牌</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Card Display -->
+  <section class="section" id="cards">
+    <div class="section-header">
+      <span class="section-icon">🃏</span>
+      <span class="section-title">牌組一覽</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="glass" style="padding: 24px;">
+      <p class="cards-label">🧊 正數牌（冰）× 各多張</p>
+      <div class="card-row">
+        <div class="play-card pc-ice">+1</div>
+        <div class="play-card pc-ice">+2</div>
+        <div class="play-card pc-ice">+3</div>
+        <div class="play-card pc-ice">+4</div>
+        <div class="play-card pc-ice">+5</div>
+        <div class="play-card pc-ice">+6</div>
+        <div class="play-card pc-ice">+7</div>
+        <div class="play-card pc-ice">+8</div>
+        <div class="play-card pc-ice">+9</div>
+      </div>
+      <p class="cards-label">🔥 負數牌（火）× 各多張</p>
+      <div class="card-row">
+        <div class="play-card pc-fire">-1</div>
+        <div class="play-card pc-fire">-2</div>
+        <div class="play-card pc-fire">-3</div>
+        <div class="play-card pc-fire">-4</div>
+        <div class="play-card pc-fire">-5</div>
+        <div class="play-card pc-fire">-6</div>
+        <div class="play-card pc-fire">-7</div>
+        <div class="play-card pc-fire">-8</div>
+        <div class="play-card pc-fire">-9</div>
+      </div>
+      <p class="cards-label">⭐ 特殊牌（進階）× 18 張</p>
+      <div class="card-row">
+        <div class="play-card pc-special">勝+2</div>
+        <div class="play-card pc-special">勝+3</div>
+        <div class="play-card pc-special">勝+4</div>
+        <div class="play-card pc-special">隨-2</div>
+        <div class="play-card pc-special">隨-3</div>
+        <div class="play-card pc-special">隨-4</div>
+        <div class="play-card pc-special">加減</div>
+        <div class="play-card pc-special">成零</div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- Basic Rules -->
+  <section class="section" id="basic">
+    <div class="section-header">
+      <span class="section-icon">📖</span>
+      <span class="section-title">初階玩法</span>
+      <div class="section-line"></div>
+    </div>
+
+    <!-- Setup Steps -->
+    <p style="font-size:.8rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:1.5px; margin-bottom:12px; font-weight:600;">🚀 開局步驟</p>
+    <div class="steps">
+      <div class="step glass">
+        <div class="step-num">1</div>
+        <div class="step-body">
+          <strong>發牌</strong>
+          <p>每位玩家獲派 <strong>6 張牌</strong>，其餘牌面朝下成為牌庫</p>
+        </div>
+      </div>
+      <div class="step glass">
+        <div class="step-num">2</div>
+        <div class="step-body">
+          <strong>翻開起始牌</strong>
+          <p>從牌庫翻開第一張牌，作為<strong>起始累積總和</strong></p>
+        </div>
+      </div>
+      <div class="step glass">
+        <div class="step-num">3</div>
+        <div class="step-body">
+          <strong>開始鬥快！</strong>
+          <p>玩家<strong>鬥快出牌</strong>，無需輪流，反應最快者優先</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Play Rules -->
+    <p style="font-size:.8rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:1.5px; margin: 24px 0 12px; font-weight:600;">⚡ 出牌規則</p>
+    <div class="glass" style="padding: 8px 12px;">
+      <ul class="rule-list">
+        <li class="rule-item">
+          <div class="rule-dot"></div>
+          <div>出牌時必須大聲講出<strong>新的累積總和</strong>數值</div>
+        </li>
+        <li class="rule-item">
+          <div class="rule-dot"></div>
+          <div>出的牌必須令累積總和<strong>改變正負符號</strong>（正→負 或 負→正）或<strong>變為零</strong></div>
+        </li>
+        <li class="rule-item">
+          <div class="rule-dot green"></div>
+          <div>累積總和變為 <strong>0</strong> 時，下一位玩家可打出<strong>任何</strong>數字牌</div>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Penalties -->
+    <p style="font-size:.8rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:1.5px; margin: 24px 0 12px; font-weight:600;">⚠️ 罰則</p>
+    <div class="alert alert-fire">
+      <span class="alert-icon">🔥</span>
+      <div><strong>計錯數值</strong> 或 <strong>出的牌無法改變正負</strong> → 罰抽 <strong>3 張牌</strong></div>
+    </div>
+    <div class="alert alert-ice">
+      <span class="alert-icon">🧊</span>
+      <div><strong>手牌全部無法改變正負</strong> → 從牌庫抽 <strong>1 張牌</strong>，繼續遊戲</div>
+    </div>
+
+    <!-- Special situations -->
+    <p style="font-size:.8rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:1.5px; margin: 24px 0 12px; font-weight:600;">🔄 特殊情況</p>
+    <div class="glass" style="padding: 8px 12px;">
+      <ul class="rule-list">
+        <li class="rule-item">
+          <div class="rule-dot fire"></div>
+          <div><strong>一圈無人出牌後</strong>，再輪到你時可一次出<strong>最多 3 張牌</strong>，以點數總和作出牌值</div>
+        </li>
+        <li class="rule-item">
+          <div class="rule-dot fire"></div>
+          <div><strong>Last Card 🗣️</strong>：剩最後 1 張手牌時必須喊 "Last Card"，忘記喊 → 罰抽 <strong>1 張牌</strong></div>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Examples -->
+    <p style="font-size:.8rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:1.5px; margin: 24px 0 12px; font-weight:600;">💡 例子</p>
+
+    <p class="example-label">例1：總和 +5，打出 -8 → 正變負 ✅</p>
+    <div class="example-flow glass">
+      <div class="total-badge tb-pos">+5</div>
+      <span class="arrow-sym">+</span>
+      <div class="ex-card pc-fire">-8</div>
+      <span class="arrow-sym">=</span>
+      <div class="total-badge tb-neg">-3 ✅</div>
+    </div>
+
+    <p class="example-label">例2：總和 -3，打出 +3 → 變零 ✅</p>
+    <div class="example-flow glass">
+      <div class="total-badge tb-neg">-3</div>
+      <span class="arrow-sym">+</span>
+      <div class="ex-card pc-ice">+3</div>
+      <span class="arrow-sym">=</span>
+      <div class="total-badge tb-zero">0 ✅</div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- Advanced Rules -->
+  <section class="section" id="advanced">
+    <div class="section-header">
+      <span class="section-icon">⚔️</span>
+      <span class="section-title">進階玩法（特殊牌）</span>
+      <div class="section-line"></div>
+    </div>
+
+    <div class="special-list">
+      <div class="sc-item glass">
+        <div class="sc-pill sc-bonus">勝+2<br>勝+3<br>勝+4</div>
+        <div class="sc-body">
+          <strong>🏅 勝負牌（+2 / +3 / +4）</strong>
+          <span>打出後可<strong>棄掉 1 張手牌</strong>，有助快速清手，佔優勢時使用</span>
+        </div>
+      </div>
+      <div class="sc-item glass">
+        <div class="sc-pill sc-penalty">隨-2</div>
+        <div class="sc-body">
+          <strong>☠️ 隨負 2</strong>
+          <span>指定一位玩家<strong>抽 1 張牌</strong></span>
+        </div>
+      </div>
+      <div class="sc-item glass">
+        <div class="sc-pill sc-penalty">隨-3</div>
+        <div class="sc-body">
+          <strong>☠️ 隨負 3</strong>
+          <span>指定一位玩家<strong>抽 2 張牌</strong></span>
+        </div>
+      </div>
+      <div class="sc-item glass">
+        <div class="sc-pill sc-penalty">隨-4</div>
+        <div class="sc-body">
+          <strong>☠️ 隨負 4</strong>
+          <span>所有其他玩家各<strong>抽 1 張牌</strong>；出牌者可<strong>再多出 1 張牌</strong></span>
+        </div>
+      </div>
+      <div class="sc-item glass">
+        <div class="sc-pill sc-flip">加減</div>
+        <div class="sc-body">
+          <strong>🔄 加減牌</strong>
+          <span>打出後，<strong>下一位玩家的運算方向反轉</strong>（加→減）；直至輪回該玩家時回復正常。<br>亦可配合 1 張數字牌，<strong>改變牌的正負</strong></span>
+        </div>
+      </div>
+      <div class="sc-item glass">
+        <div class="sc-pill sc-zero">成零</div>
+        <div class="sc-body">
+          <strong>⭕ 成零牌</strong>
+          <span>累積總和立即<strong>變為 0</strong>；出牌者需從牌庫抽 1 張牌，重新計算</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Advanced Supplements -->
+    <p style="font-size:.8rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:1.5px; margin: 28px 0 12px; font-weight:600;">📌 進階補充規則</p>
+    <div class="glass" style="padding: 8px 12px;">
+      <ul class="rule-list">
+        <li class="rule-item">
+          <div class="rule-dot purple"></div>
+          <div>打出特殊牌後，所得累積總和<strong>必須是整數</strong></div>
+        </li>
+        <li class="rule-item">
+          <div class="rule-dot purple"></div>
+          <div>成功改變正負後，若累積總和是<strong>兩位數</strong>：保留正/負號，只取<strong>個位數</strong>繼續遊戲</div>
+        </li>
+        <li class="rule-item">
+          <div class="rule-dot fire"></div>
+          <div>特殊牌<strong>不能</strong>作為開局牌（翻開的第一張牌）</div>
+        </li>
+        <li class="rule-item">
+          <div class="rule-dot fire"></div>
+          <div>特殊牌<strong>不能</strong>作為最後一張手牌打出</div>
+        </li>
+      </ul>
+    </div>
+
+    <div class="alert alert-green" style="margin-top: 12px;">
+      <span class="alert-icon">📏</span>
+      <div>
+        <strong>個位數規則例子：</strong><br>
+        累積總和 -3，打出 +14（三張牌總和）→ -3 + 14 = <strong>+11</strong> → 保留 + 號，取個位 → <strong>+1</strong>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- Quick Reference -->
+  <section class="section" id="quick">
+    <div class="section-header">
+      <span class="section-icon">📋</span>
+      <span class="section-title">快速參考</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="quick-grid">
+      <div class="quick-card glass">
+        <div class="quick-em">✅</div>
+        <div class="quick-title">合法出牌</div>
+        <div class="quick-desc">令累積總和由正變負、負變正，或變為零</div>
+      </div>
+      <div class="quick-card glass">
+        <div class="quick-em">❌</div>
+        <div class="quick-title">計錯 / 非法</div>
+        <div class="quick-desc">罰抽 3 張牌</div>
+      </div>
+      <div class="quick-card glass">
+        <div class="quick-em">🗣️</div>
+        <div class="quick-title">Last Card</div>
+        <div class="quick-desc">最後 1 張必須喊<br>忘記 → 罰抽 1 張</div>
+      </div>
+      <div class="quick-card glass">
+        <div class="quick-em">🤚</div>
+        <div class="quick-title">無牌可出</div>
+        <div class="quick-desc">抽 1 張；一圈無人出牌可一次出最多 3 張</div>
+      </div>
+      <div class="quick-card glass">
+        <div class="quick-em">🔟</div>
+        <div class="quick-title">兩位數規則</div>
+        <div class="quick-desc">保留正/負，只取個位數繼續（進階）</div>
+      </div>
+      <div class="quick-card glass">
+        <div class="quick-em">⭐</div>
+        <div class="quick-title">特殊牌限制</div>
+        <div class="quick-desc">不能作開局牌或最後一張打出</div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  🧊🔥 冰火大戰 Ice &amp; Fire &nbsp;·&nbsp; 整數策略卡牌遊戲 &nbsp;·&nbsp; 2–6 人適玩
+</footer>
+
+<script>
+  // Smooth scroll for nav tabs
+  function scrollTo(id) {
+    document.querySelector(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  // Tab highlight on scroll
+  const sections = ['#basic', '#advanced', '#quick'];
+  const tabs = document.querySelectorAll('.nav-tab');
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const id = '#' + entry.target.id;
+        const idx = sections.indexOf(id);
+        if (idx >= 0) {
+          tabs.forEach(t => t.classList.remove('active'));
+          tabs[idx]?.classList.add('active');
+        }
+      }
+    });
+  }, { threshold: 0.3 });
+
+  sections.forEach(s => {
+    const el = document.querySelector(s);
+    if (el) observer.observe(el);
+  });
+</script>
+
+</body>
+</html>
