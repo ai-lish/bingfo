@@ -185,6 +185,24 @@
     .install-banner button:first-of-type{background:var(--ice-3);color:white}
     .install-banner button:last-of-type{background:transparent;color:var(--text-muted)}
     .sub-label{font-size:.8rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:1.5px;margin:24px 0 12px;font-weight:600}
+
+    /* ══ POPUP OVERLAY ══ */
+    .popup-overlay{position:fixed;inset:0;background:rgba(6,13,21,0.85);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);z-index:500;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s ease}
+    .popup-overlay.active{opacity:1;pointer-events:all}
+    .popup-card{background:linear-gradient(145deg,#0d1f2d,#081018);border:1.5px solid rgba(103,232,249,.4);border-radius:20px;padding:32px 40px;text-align:center;max-width:320px;width:90%;transform:scale(.7) translateY(30px);transition:transform .35s cubic-bezier(.34,1.56,.64,1);box-shadow:0 0 40px rgba(0,180,216,.3),0 20px 60px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.08)}
+    .popup-overlay.active .popup-card{transform:scale(1) translateY(0)}
+    .popup-card.fire-card{border-color:rgba(251,146,60,.5);box-shadow:0 0 40px rgba(251,146,60,.3),0 20px 60px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.08)}
+    .popup-value{font-size:5rem;font-weight:900;line-height:1;margin-bottom:12px}
+    .popup-value.ice{color:var(--ice-1);text-shadow:0 0 30px rgba(168,237,234,.6)}
+    .popup-value.fire{color:var(--fire-1);text-shadow:0 0 30px rgba(255,159,28,.6)}
+    .popup-label{font-size:1rem;color:var(--text-muted);margin-bottom:8px}
+    .popup-effect{font-size:.85rem;color:var(--text-muted);margin-bottom:20px}
+    .popup-close{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:10px;padding:10px 28px;color:var(--text);font-size:.88rem;cursor:pointer;transition:all .2s;font-family:inherit}
+    .popup-close:hover{background:rgba(255,255,255,.15);border-color:rgba(255,255,255,.3)}
+    @keyframes tapPop{0%{transform:scale(1)}50%{transform:scale(.88)}100%{transform:scale(1)}}
+    .demo-card.tapped{animation:tapPop .2s ease}
+    @keyframes burstIce{0%{opacity:1;transform:translate(0,0) scale(1)}100%{opacity:0;transform:translate(var(--tx),var(--ty)) scale(.3)}}
+    @keyframes burstFire{0%{opacity:1;transform:translate(0,0) scale(1)}100%{opacity:0;transform:translate(var(--tx),var(--ty)) scale(.3)}}
   </style>
 </head>
 <body>
@@ -529,6 +547,35 @@ function updateHistory(){
   el.textContent=history.slice(-5).join('  →  ');
 }
 
+// ══ POPUP FUNCTIONS ══
+function showPopup(value) {
+  const overlay=document.getElementById('popupOverlay');
+  const card=document.getElementById('popupCard');
+  const valueEl=document.getElementById('popupValue');
+  const labelEl=document.getElementById('popupLabel');
+  const effectEl=document.getElementById('popupEffect');
+  const isPositive=value>0;
+  const sign=isPositive?'+':'';
+  valueEl.textContent=sign+value;
+  valueEl.className='popup-value '+(isPositive?'ice':'fire');
+  card.className='popup-card '+(isPositive?'':'fire-card');
+  labelEl.textContent=isPositive?'🧊 冰牌':'🔥 火牌';
+  if(currentTotal===0){
+    effectEl.textContent='總和為零，可出任何牌！';
+  } else {
+    const newTotal=currentTotal+value;
+    effectEl.textContent='令總和由 '+(currentTotal>0?'+':'')+currentTotal+' → '+(newTotal>0?'+':'')+newTotal;
+  }
+  overlay.classList.add('active');
+}
+function closePopup(e){
+  if(e.target===document.getElementById('popupOverlay')){
+    document.getElementById('popupOverlay').classList.remove('active');
+  }
+}
+function closePopupDirect(){
+  document.getElementById('popupOverlay').classList.remove('active');
+}
 function isValidPlay(current,delta){
   const n=current+delta;
   const oldSign=getSign(current);const newSign=getSign(n);
@@ -564,6 +611,8 @@ function playCard(el,val){
   currentTotal=newTotal;
   updateDisplay(currentTotal);
   updateHistory();
+  // Show popup on valid play
+  setTimeout(() => showPopup(val), 300);
   if(hintVisible)showHint();
   // Check win - all demo cards played
   const allPlayed=document.querySelectorAll('.demo-card').length>0&&document.querySelectorAll('.demo-card.played').length===document.querySelectorAll('.demo-card').length;
@@ -685,5 +734,14 @@ if('serviceWorker' in navigator){
   navigator.serviceWorker.register('sw.js');
 }
 </script>
+<!-- Popup Overlay -->
+<div class="popup-overlay" id="popupOverlay" onclick="closePopup(event)">
+  <div class="popup-card" id="popupCard">
+    <div class="popup-label" id="popupLabel">冰牌</div>
+    <div class="popup-value" id="popupValue">+5</div>
+    <div class="popup-effect" id="popupEffect">令累積總和增加 +5</div>
+    <button class="popup-close" onclick="closePopupDirect()">關閉</button>
+  </div>
+</div>
 </body>
 </html>
