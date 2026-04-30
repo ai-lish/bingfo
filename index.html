@@ -2,7 +2,14 @@
 <html lang="zh-Hant">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#060d15">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="冰火大戰">
+  <link rel="apple-touch-icon" href="icon-192.png">
   <title>冰火大戰 Ice & Fire</title>
   <style>
     :root {
@@ -25,7 +32,7 @@
     }
     *{box-sizing:border-box;margin:0;padding:0}
     html{scroll-behavior:smooth}
-    body{font-family:-apple-system,'SF Pro Display','Helvetica Neue',Arial,'PingFang TC','Microsoft YaHei',sans-serif;background:var(--bg);color:var(--text);line-height:1.7;min-height:100vh;overflow-x:hidden}
+    body{font-family:-apple-system,'SF Pro Display','Helvetica Neue',Arial,'PingFang TC','Microsoft YaHei',sans-serif;background:var(--bg);color:var(--text);line-height:1.7;min-height:100vh;overflow-x:hidden;padding-bottom:env(safe-area-inset-bottom);padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-right)}
     body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 80% 60% at 10% 20%,rgba(0,119,182,0.15) 0%,transparent 60%),radial-gradient(ellipse 60% 50% at 90% 80%,rgba(230,57,70,0.15) 0%,transparent 60%),radial-gradient(ellipse 40% 40% at 50% 50%,rgba(192,132,252,0.05) 0%,transparent 60%);pointer-events:none;z-index:0}
     #scroll-progress{position:fixed;top:0;left:0;height:3px;z-index:1000;background:linear-gradient(90deg,var(--ice-2),var(--purple),var(--fire-2));width:0%;transition:width 0.05s linear}
     .hero{position:relative;padding:80px 24px 60px;text-align:center;z-index:1}
@@ -37,7 +44,8 @@
     .badges{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-bottom:40px}
     .badge{background:var(--surface);border:1px solid var(--border);border-radius:100px;padding:7px 18px;font-size:0.82rem;font-weight:500;color:var(--text-muted);backdrop-filter:blur(12px);transition:all 0.2s}
     .badge:hover{border-color:var(--border-hover);color:var(--text);transform:translateY(-1px)}
-    .nav-tabs{display:flex;justify-content:center;gap:4px;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:4px;max-width:500px;margin:0 auto;backdrop-filter:blur(12px)}
+    .nav-tabs{display:flex;justify-content:center;gap:4px;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:4px;max-width:500px;margin:0 auto;backdrop-filter:blur(12px);position:relative}
+    .nav-tab{min-height:44px}
     .nav-tab{flex:1;padding:9px 14px;border:none;border-radius:10px;background:transparent;color:var(--text-muted);font-size:0.82rem;font-weight:500;cursor:pointer;transition:all 0.25s;font-family:inherit}
     .nav-tab.active{background:linear-gradient(135deg,rgba(0,180,216,0.18),rgba(255,107,53,0.12));color:var(--text);border:1px solid var(--border-hover)}
     .container{max-width:880px;margin:0 auto;padding:0 24px 60px;position:relative;z-index:1}
@@ -156,6 +164,15 @@
     .divider{height:1px;background:linear-gradient(90deg,transparent,var(--border-hover),transparent);margin:40px 0}
     footer{text-align:center;padding:32px 24px;color:var(--text-muted);font-size:0.78rem;border-top:1px solid var(--border);position:relative;z-index:1;letter-spacing:0.5px}
     @media(max-width:600px){.hero{padding:60px 16px 40px}.container{padding:0 16px 48px}.overview-grid,.quick-grid,.tips-grid{grid-template-columns:1fr 1fr}.hero-emoji{font-size:60px}.demo-number{font-size:2.8rem}.play-card{width:46px;height:64px;font-size:0.9rem}.demo-card{width:44px;height:60px;font-size:0.9rem}}
+    @media(max-width:768px){.nav-tabs{position:fixed;bottom:0;left:0;right:0;max-width:100%;border-radius:0;border-top:1px solid var(--border);border-bottom:none;border-left:none;border-right:none;z-index:100;padding:8px 12px calc(8px + env(safe-area-inset-bottom));backdrop-filter:blur(20px)}.container{padding-bottom:80px}}
+    @media(max-width:480px){.card-row,.demo-card-row{gap:6px}.play-card{width:44px;height:62px;font-size:0.9rem}.demo-card{width:44px;height:60px;font-size:0.9rem}.demo-number{font-size:3rem}}
+    .demo-card{min-width:48px;min-height:64px}
+    .demo-btn{min-height:44px;min-width:80px}
+    .install-banner{position:fixed;bottom:calc(70px + env(safe-area-inset-bottom));left:16px;right:16px;background:rgba(0,180,216,0.15);border:1px solid rgba(0,180,216,0.4);border-radius:14px;padding:12px 16px;display:none;align-items:center;gap:10px;z-index:200;backdrop-filter:blur(16px);font-size:0.85rem}
+    .install-banner span{flex:1}
+    .install-banner button{padding:6px 14px;border-radius:8px;border:none;cursor:pointer;font-family:inherit;font-size:0.8rem}
+    .install-banner button:first-of-type{background:var(--ice-3);color:white}
+    .install-banner button:last-of-type{background:transparent;color:var(--text-muted)}
     .sub-label{font-size:.8rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:1.5px;margin:24px 0 12px;font-weight:600}
   </style>
 </head>
@@ -488,10 +505,12 @@ function playCard(el,val){
     void display.offsetWidth;
     display.classList.add('invalid');
     setTimeout(()=>display.classList.remove('invalid'),450);
+    if(navigator.vibrate)navigator.vibrate([100,50,100]);
     const needed=currentTotal>0?`需要打出 < ${-currentTotal} 嘅負數牌（或剛好 ${-currentTotal}）`:`需要打出 > ${-currentTotal} 嘅正數牌（或剛好 ${Math.abs(currentTotal)}）`;
     showHintText('❌ 唔合法！'+needed);
     return;
   }
+  if(navigator.vibrate)navigator.vibrate(50);
   // Particle burst at card position
   const rect=el.getBoundingClientRect();
   burstParticles(rect.left+rect.width/2,rect.top+rect.height/2,val>0?'ice':'fire');
@@ -536,6 +555,25 @@ function showHint(){
 function showHintText(text){const el=document.getElementById('hintBox');el.textContent=text;el.style.display='block'}
 
 updateDisplay(currentTotal);
+
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt',(e)=>{
+  e.preventDefault();
+  deferredPrompt=e;
+  document.getElementById('installBanner').style.display='flex';
+});
+function installApp(){
+  if(deferredPrompt){
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then(()=>{
+      deferredPrompt=null;
+      document.getElementById('installBanner').style.display='none';
+    });
+  }
+}
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('sw.js');
+}
 </script>
 </body>
 </html>

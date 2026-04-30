@@ -1,0 +1,14 @@
+{
+  "name": "冰火大戰 Ice & Fire",
+  "short_name": "冰火大戰",
+  "description": "整數策略卡牌遊戲",
+  "start_url": "/bingohuo/",
+  "display": "standalone",
+  "background_color": "#060d15",
+  "theme_color": "#060d15",
+  "orientation": "portrait-primary",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}
