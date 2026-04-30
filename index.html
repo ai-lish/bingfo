@@ -524,12 +524,15 @@ function updateHistory(){
   el.textContent=history.slice(-5).join('  →  ');
 }
 
+function isValidPlay(current,delta){
+  const n=current+delta;
+  const oldSign=getSign(current);const newSign=getSign(n);
+  return current===0||oldSign!==newSign;
+}
 function playCard(el,val){
   if(el.classList.contains('played'))return;
   const newTotal=currentTotal+val;
-  const oldSign=getSign(currentTotal);
-  const newSign=getSign(newTotal);
-  const isValid=(currentTotal===0)||(oldSign!==newSign);
+  const isValid=isValidPlay(currentTotal,val);
   if(!isValid){
     const display=document.getElementById('demoDisplay');
     display.classList.remove('invalid');
