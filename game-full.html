@@ -230,12 +230,10 @@ function canPlay(card,total,handLength){
   // Special cards cannot be played as last card (÷ cards are exception - can be last if paired with number)
   // Non-div special cards as last card: always invalid
   if(handLength===1&&card.kind==='special'&&card.sub!=='div'&&card.sub!=='divAll')return false;
-  // ÷ cards: if played alone (not paired), must result in integer
-  // If handLength===1 and ÷ card is playable at all, it means it CAN be paired with deck draw after
-  // So we allow ÷ cards to be selectable even as last card
+  // ÷ cards: result (total / divisor) must be integer
   if(card.kind==='special'){
     if(card.sub==='div'||card.sub==='divAll'){
-      if(!Number.isInteger((total+card.v)/card.v))return false;
+      if(card.v===0||!Number.isInteger(total/card.v))return false;
     }return true;
   }
   if(total===0)return true;
@@ -281,23 +279,24 @@ function executePlay(cards){
   if(G.cur===0){G.sel=[];}
   const p=G.players[G.cur];
   cards.forEach(c=>{const idx=p.hand.indexOf(c);if(idx>=0)p.hand.splice(idx,1);G.discard.push(c);});
-  // Save original total BEFORE any changes (needed for ÷ card calculation)
   const oldTotal=G.total;
-  // Calculate sum for multi-play — collect ÷ cards separately to avoid double-division
   const divCards=cards.filter(c=>c.kind==='special'&&(c.sub==='div'||c.sub==='divAll'));
   let sumVal=0;let hasNumber=false;
   cards.forEach(c=>{if(c.kind==='special'&&c.sub!=='div'&&c.sub!=='divAll'){
-    if(c.sub==='mult'){sumVal+=c.v;}else if(c.sub==='zero'){G.total=0;msg(c.type+'！總和歸零！');drawCard(1).forEach(dc=>p.hand.push(dc));msg('你補了 1 張牌');return;}else if(c.sub==='pm'){G.sf=true;msg('± 效果開啟！下一位玩家方向反轉');}
+    if(c.sub==='mult'){
+      // ×(-2/3/4)：棄1張手牌，不改變總和
+      msg(c.type+'！棄1張手牌');
+    }else if(c.sub==='zero'){
+      G.total=0;msg(c.type+'！總和歸零！');drawCard(1).forEach(dc=>p.hand.push(dc));msg('你補了 1 張牌');
+    }else if(c.sub==='pm'){G.sf=true;msg('± 效果開啟！下一位玩家方向反轉');}
   }else if(c.kind!=='special'){
     let v=c.val;if(G.cur===0&&G.sf){v=-v;G.sf=false;}sumVal+=v;hasNumber=true;
   }
   });
-  if(hasNumber||cards.every(c=>c.kind==='special'&&c.sub!=='zero'&&c.sub!=='pm')){
+  if(hasNumber||cards.every(c=>c.kind==='special'&&c.sub!=='zero'&&c.sub!=='pm'&&c.sub!=='mult')){
     if(G.total===0){G.total=sumVal;}else{G.total=ones(G.total+sumVal);}}
-  // Apply ÷ card effects: total = (oldTotal + card.v + otherCardSum) / divisor
-  // ÷ card's v is added to total before division (consistent with canPlay check)
   if(divCards.length>0){
-    divCards.forEach(c=>{const dividend=oldTotal+c.v+sumVal;const newTotal=ones(dividend/c.v);msg(c.type+'：'+fmt(dividend)+' ÷ '+c.v+' = '+fmt(newTotal));G.total=newTotal;});
+    divCards.forEach(c=>{if(c.v===0)return;const q=oldTotal/c.v;const newTotal=Number.isInteger(q)?ones(Math.round(q)):NaN;msg(c.type+'：'+fmt(oldTotal)+' ÷ '+c.v+' = '+fmt(q)+' → '+fmt(newTotal));G.total=newTotal;});
   }
   msg(p.name+' 出了 '+cards.map(c=>cLabel(c)).join('、')+' → 總和 = '+fmt(G.total));
   G.passes=0;G.multi=false;
@@ -309,7 +308,7 @@ function executePlay(cards){
 }
 
 // ─── NEXT TURN ───
-function nextTurn(){G.cur=(G.cur+1)%G.pc;if(G.cur===0){G.round++;}renderAll();if(G.cur>0){setTimeout(()=>doAITurn(),800);}else{msg('你的回合！');}}
+function nextTurn(){G.cur=(G.cur+1)%G.pc;if(G.cur===0){G.round++;G.passes=0;G.multi=false;}renderAll();if(G.cur>0){setTimeout(()=>doAITurn(),800);}else{msg('你的回合！');}}
 
 // ─── CHECK WIN ───
 function checkWin(idx){const p=G.players[idx];if(p.hand.length===0){G.winner=idx;G.winnersName=p.name;setTimeout(()=>showWin(),500);}}
@@ -320,7 +319,7 @@ function showWin(){const ov=$('winOv');ov.classList.add('active');const isMe=G.w
 function showSpeed(){$('speedOv').classList.add('active');$('sval').textContent=fmt(G.total);$('scd').textContent='5';$('sres').textContent='';let t=5;G._speedTimer=setInterval(()=>{t--;$('scd').textContent=''+t;if(t<=0){clearInterval(G._speedTimer);if(G.phase==='speed'&&G.speedW<0){$('sres').textContent='時間到！';setTimeout(endSpeedNoWinner,1000);}}},1000);scheduleAIsSpeed();}
 function endSpeedNoWinner(){const allValid=G.players.slice(1).flatMap((p,i)=>{const vi=G.players.indexOf(p);return validCards(p.hand,G.total).map(c=>({card:c,pi:vi}));});if(allValid.length===0)return endSpeedRound();const numCards=allValid.filter(x=>x.card.kind!=='special');const valid=numCards.length>0?numCards:allValid;const pick=valid[Math.floor(Math.random()*valid.length)];G.speedW=pick.pi;const p=G.players[pick.pi];const idx=p.hand.indexOf(pick.card);if(idx>=0)p.hand.splice(idx,1);G.discard.push(pick.card);G.total=ones(G.total+pick.card.val);msg('⚡ '+p.name+' 打出 '+cLabel(pick.card)+' → '+fmt(G.total));endSpeedRound();}
 function speedPlay(){if(G.speedP)return;G.speedP=true;const myHand=G.players[0].hand;const valid=validCards(myHand,G.total);if(valid.length===0){msg('你沒有合法牌！');G.speedP=false;return;}$('sres').innerHTML='選擇要出的牌：<div style="display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin-top:10px" id="spCards"></div>';const area=$('spCards');valid.forEach(c=>{const btn=document.createElement('button');btn.className='gc '+cCss(c);btn.style.cssText='width:56px;height:78px;cursor:pointer';btn.textContent=cLabel(c);btn.onclick=()=>{G.speedW=0;const idx=myHand.indexOf(c);if(idx>=0)myHand.splice(idx,1);G.discard.push(c);G.total=ones(G.total+c.val);msg('⚡ 你打出 '+cLabel(c)+' → '+fmt(G.total));area.innerHTML='';$('sres').textContent='✅ 你最快！';setTimeout(endSpeedRound,1500);};area.appendChild(btn);});}
-function endSpeedRound(){$('speedOv').classList.remove('active');clearInterval(G._speedTimer);G.phase='turn';G.cur=G.speedW>=0?G.speedW:0;G.sf=false;G.passes=0;renderAll();if(G.cur>0){setTimeout(()=>doAITurn(),900);}else{msg('你的回合！');}}
+// 舊版 endSpeedRound（已棄用，由下方新版取代）
 
 // ─── AI ───
 function scheduleAIsSpeed(){G.players.forEach((p,idx)=>{if(idx===0)return;setTimeout(()=>doAISpeed(idx),Math.random()*4000+500);});}
@@ -328,9 +327,10 @@ function doAISpeed(idx){if(G.phase!=='speed'||G.speedP||G.speedW>=0)return;const
 
 function doAITurn(){try{if(G.phase!=='turn'||G.cur===0||G.winner>=0)return;if(G.aiLock)return;G.aiLock=true;const p=G.players[G.cur];const valid=validCards(p.hand,G.total);if(valid.length===0){G.passes=(G.passes||0)+1;msg(p.name+' Pass 了');if(G.passes>=G.pc-1){G.multi=true;msg('全體 Pass！可一次出多張');}nextTurn();G.aiLock=false;return;}// Try to play
 let chosen=valid[Math.floor(Math.random()*valid.length)];if(chosen.kind==='special'){chosen=chooseSpecialAI(chosen,p,valid);}if(chosen){setTimeout(()=>{try{executePlay([chosen]);}finally{G.aiLock=false;}},700);}else{G.passes++;msg(p.name+' Pass 了');nextTurn();G.aiLock=false;}}catch(e){console.error('doAITurn error:',e);G.aiLock=false;}}
-function scheduleAI(){if(G.phase==='turn'&&G.cur>0&&!G.aiLock&&G.winner<0){doAITurn();}}// Safety net: ensure AI turn fires if setTimeout missed
-let _aiSafetyNet=null;function armAISafetyNet(){if(_aiSafetyNet)clearTimeout(_aiSafetyNet);_aiSafetyNet=setTimeout(()=>{scheduleAI();armAISafetyNet();},2000);}
-function endSpeedRound(){$('speedOv').classList.remove('active');clearInterval(G._speedTimer);G.phase='turn';G.cur=G.speedW>=0?G.speedW:0;G.sf=false;G.passes=0;renderAll();armAISafetyNet();if(G.cur>0){setTimeout(()=>doAITurn(),900);}else{msg('你的回合！');}}
+function scheduleAI(){if(G.cur===0||G.aiLock||G.winner>=0||G.phase!=='turn'){return;}doAITurn();}// Safety net: ensure AI turn fires if setTimeout missed
+let _aiSafetyNet=null;function armAISafetyNet(){if(_aiSafetyNet)clearTimeout(_aiSafetyNet);if(G.cur===0||G.winner>=0){return;}// Stop when it's player's turn or game over
+_aiSafetyNet=setTimeout(()=>{scheduleAI();armAISafetyNet();},2500);}
+function endSpeedRound(){$('speedOv').classList.remove('active');clearInterval(G._speedTimer);G.phase='turn';G.cur=G.speedW>=0?G.speedW:0;G.sf=false;G.passes=0;renderAll();if(G.cur>0){setTimeout(()=>doAITurn(),900);armAISafetyNet();}else{msg('你的回合！');}}
 function chooseSpecialAI(c,p,valid){// Prefer ×0, then big numbers, then specials
 const numCards=valid.filter(x=>x.kind!=='special');if(numCards.length>0&&Math.random()>0.4)return null;// prefer number card
 const zeroCard=valid.find(x=>x.type==='×0');if(zeroCard)return zeroCard;
