@@ -308,7 +308,7 @@ function executePlay(cards){
 }
 
 // ─── NEXT TURN ───
-function nextTurn(){G.cur=(G.cur+1)%G.pc;if(G.cur===0){G.round++;G.passes=0;G.multi=false;}renderAll();if(G.cur>0){setTimeout(()=>doAITurn(),800);}else{msg('你的回合！');}}
+function nextTurn(){const oldCur=G.cur;G.cur=(G.cur+1)%G.pc;if(G.cur===0){G.round++;G.passes=0;G.multi=false;}console.log('nextTurn: '+oldCur+'->'+G.cur+', round='+G.round);renderAll();if(G.cur>0){setTimeout(()=>{console.log('Scheduling AI turn for cur='+G.cur);doAITurn();},800);}else{msg('你的回合！');}}
 
 // ─── CHECK WIN ───
 function checkWin(idx){const p=G.players[idx];if(p.hand.length===0){G.winner=idx;G.winnersName=p.name;setTimeout(()=>showWin(),500);}}
@@ -325,8 +325,7 @@ function speedPlay(){if(G.speedP)return;G.speedP=true;const myHand=G.players[0].
 function scheduleAIsSpeed(){G.players.forEach((p,idx)=>{if(idx===0)return;setTimeout(()=>doAISpeed(idx),Math.random()*4000+500);});}
 function doAISpeed(idx){if(G.phase!=='speed'||G.speedP||G.speedW>=0)return;const p=G.players[idx];const valid=validCards(p.hand,G.total);if(valid.length>0&&Math.random()>0.3){G.speedW=idx;const c=valid[Math.floor(Math.random()*valid.length)];const ci=p.hand.indexOf(c);if(ci>=0)p.hand.splice(ci,1);G.discard.push(c);G.total=ones(G.total+c.val);msg('⚡ '+p.name+' 打出 '+cLabel(c)+' → '+fmt(G.total));endSpeedRound();}}
 
-function doAITurn(){try{if(G.phase!=='turn'||G.cur===0||G.winner>=0)return;if(G.aiLock)return;G.aiLock=true;const p=G.players[G.cur];const valid=validCards(p.hand,G.total);if(valid.length===0){G.passes=(G.passes||0)+1;msg(p.name+' Pass 了');if(G.passes>=G.pc-1){G.multi=true;msg('全體 Pass！可一次出多張');}nextTurn();G.aiLock=false;return;}// Try to play
-let chosen=valid[Math.floor(Math.random()*valid.length)];if(chosen.kind==='special'){chosen=chooseSpecialAI(chosen,p,valid);}if(chosen){setTimeout(()=>{try{executePlay([chosen]);}finally{G.aiLock=false;}},700);}else{G.passes++;msg(p.name+' Pass 了');nextTurn();G.aiLock=false;}}catch(e){console.error('doAITurn error:',e);G.aiLock=false;}}
+function doAITurn(){try{console.log('doAITurn called: phase='+G.phase+', cur='+G.cur+', winner='+G.winner+', aiLock='+G.aiLock);if(G.phase!=='turn'||G.cur===0||G.winner>=0){console.log('doAITurn early return');return;}if(G.aiLock){console.log('doAITurn skipped - aiLock true');return;}G.aiLock=true;const p=G.players[G.cur];const valid=validCards(p.hand,G.total);console.log('AI hand: '+p.hand.length+' cards, valid plays: '+valid.length);if(valid.length===0){G.passes=(G.passes||0)+1;msg(p.name+' Pass 了');if(G.passes>=G.pc-1){G.multi=true;msg('全體 Pass！可一次出多張');}nextTurn();G.aiLock=false;return;}let chosen=valid[Math.floor(Math.random()*valid.length)];if(chosen.kind==='special'){chosen=chooseSpecialAI(chosen,p,valid);}console.log('AI playing: '+cLabel(chosen));if(chosen){setTimeout(()=>{try{executePlay([chosen]);G.aiLock=false;}catch(e){console.error('executePlay error:',e);G.aiLock=false;}},700);}else{G.passes++;msg(p.name+' Pass 了');nextTurn();G.aiLock=false;}}catch(e){console.error('doAITurn error:',e);G.aiLock=false;}}
 function scheduleAI(){if(G.cur===0||G.aiLock||G.winner>=0||G.phase!=='turn'){return;}doAITurn();}// Safety net: ensure AI turn fires if setTimeout missed
 let _aiSafetyNet=null;function armAISafetyNet(){if(_aiSafetyNet)clearTimeout(_aiSafetyNet);if(G.cur===0||G.winner>=0){return;}// Stop when it's player's turn or game over
 _aiSafetyNet=setTimeout(()=>{scheduleAI();armAISafetyNet();},2500);}
