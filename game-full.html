@@ -310,7 +310,8 @@ function executePlay(cards){
 }
 
 // ─── NEXT TURN ───
-function nextTurn(){const oldCur=G.cur;G.cur=(G.cur+1)%G.pc;if(G.cur===0){G.round++;G.passes=0;G.multi=false;}console.log('nextTurn: '+oldCur+'->'+G.cur+', round='+G.round);renderAll();if(G.cur>0){setTimeout(()=>{console.log('Scheduling AI turn for cur='+G.cur);doAITurn();},800);}else{msg('你的回合！');}}
+function nextTurn(){const oldCur=G.cur;G.cur=(G.cur+1)%G.pc;if(G.cur===0){G.round++;G.passes=0;G.multi=false;renderAll();msg('你的回合！');}else{// Only auto-schedule AI if previous player was ALSO AI (AI→AI transition)
+renderAll();if(oldCur>0){setTimeout(()=>{if(G.phase==='turn'&&G.cur>0&&G.winner<0&&!G.aiLock)doAITurn();},800);}else{msg(G.players[G.cur].name+' 的回合');}}}
 
 // ─── CHECK WIN ───
 function checkWin(idx){const p=G.players[idx];if(p.hand.length===0){G.winner=idx;G.winnersName=p.name;setTimeout(()=>showWin(),500);}}
