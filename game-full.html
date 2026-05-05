@@ -313,7 +313,7 @@ function executePlay(cards){
 function nextTurn(){const oldCur=G.cur;G.cur=(G.cur+1)%G.pc;if(G.cur===0){G.round++;G.passes=0;G.multi=false;renderAll();msg('你的回合！');}else{renderAll();msg(G.players[G.cur].name+' 的回合');if(oldCur>0){setTimeout(()=>{if(G.phase==='turn'&&G.cur>0&&G.winner<0&&!G.aiLock)doAITurn();},800);}else{setTimeout(()=>{if(G.phase==='turn'&&G.cur>0&&G.winner<0&&!G.aiLock)doAITurn();},900);}}}
 
 // ─── CHECK WIN ───
-function checkWin(idx){const p=G.players[idx];if(p.hand.length===0){G.winner=idx;G.winnersName=p.name;setTimeout(()=>showWin(),500);}}
+function checkWin(idx){const p=G.players[idx];if(G.total===0){G.winner=idx;G.winnersName=p.name;setTimeout(()=>showWin(),500);}}
 
 function showWin(){const ov=$('winOv');ov.classList.add('active');const isMe=G.winner===0;recordWin(isMe);playWin();$('wt').textContent=isMe?'🏆 你贏了！':'🏆 '+G.winnersName+' 勝利！';$('wt').style.color=isMe?'#fbbf24':'#f0f4f8';const s=loadStats();$('ws').textContent='勝率：'+s.wins+'勝 '+s.losses+'敗 (共'+s.plays+'局)';}
 
