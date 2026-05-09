@@ -1,0 +1,1110 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>冰火大戰 — 規則教學試玩</title>
+<style>
+:root{
+  --ice-1:#0077b6;--ice-2:#00b4d8;
+  --fire-1:#c2410c;--fire-2:#ff6b35;
+  --purple:#c084fc;--green:#4ade80;--yellow:#fbbf24;
+  --bg:#e8e8e8;--surface:rgba(0,0,0,0.06);--border:rgba(0,0,0,0.1);
+  --text:#1a1a1a;--text-muted:#5a5a5a;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:-apple-system,'SF Pro Display','Helvetica Neue',Arial,'PingFang TC',sans-serif;background:var(--bg);color:var(--text);line-height:1.6;min-height:100vh;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 80% 60% at 10% 20%,rgba(0,119,182,0.12) 0%,transparent 60%),radial-gradient(ellipse 60% 50% at 90% 80%,rgba(230,57,70,0.12) 0%,transparent 60%);pointer-events:none;z-index:0}
+.container{position:relative;z-index:1;max-width:860px;margin:0 auto;padding:0 16px 60px}
+
+/* Hero */
+.hero{text-align:center;padding:40px 16px 28px}
+.hero h1{font-size:1.8rem;font-weight:900;background:linear-gradient(90deg,var(--ice-1),#6b21a8,var(--fire-1));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:6px}
+.hero p{color:var(--text-muted);font-size:0.9rem}
+.back-link{display:inline-flex;align-items:center;gap:5px;margin-top:14px;padding:8px 18px;background:var(--surface);border:1px solid var(--border);border-radius:10px;text-decoration:none;color:var(--text-muted);font-size:0.82rem;transition:all 0.2s}
+.back-link:hover{color:var(--text);border-color:rgba(0,0,0,0.2)}
+
+/* Section header */
+.sec-title{font-size:1rem;font-weight:700;margin:32px 0 14px;display:flex;align-items:center;gap:8px;color:var(--text-muted);letter-spacing:0.5px;text-transform:uppercase;font-size:0.78rem}
+.sec-title::after{content:'';flex:1;height:1px;background:var(--border)}
+
+/* Scenario card */
+.scenario{background:white;border:1px solid var(--border);border-radius:16px;padding:20px 22px;margin-bottom:16px;box-shadow:0 2px 8px rgba(0,0,0,0.06);transition:box-shadow 0.2s}
+.scenario:hover{box-shadow:0 4px 16px rgba(0,0,0,0.1)}
+.sc-header{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.sc-icon{font-size:1.4rem;flex-shrink:0}
+.sc-title{font-weight:700;font-size:1rem}
+.sc-rule{font-size:0.82rem;color:var(--text-muted);margin-bottom:14px;line-height:1.5;padding:10px 14px;background:rgba(0,0,0,0.03);border-radius:8px;border-left:3px solid var(--border)}
+.sc-rule b{color:var(--text)}
+
+/* Total display */
+.total-display{display:inline-flex;align-items:center;gap:8px;background:rgba(0,0,0,0.04);border:1px solid var(--border);border-radius:12px;padding:10px 18px;margin-bottom:14px;font-weight:900;font-size:1.4rem}
+.total-display.positive{color:var(--ice-1);background:rgba(0,119,182,0.06);border-color:rgba(0,119,182,0.2)}
+.total-display.negative{color:var(--fire-1);background:rgba(194,65,12,0.06);border-color:rgba(194,65,12,0.2)}
+.total-display.zero{color:#15803d;background:rgba(21,128,61,0.06);border-color:rgba(21,128,61,0.2)}
+.total-label{font-size:0.68rem;font-weight:500;color:var(--text-muted);letter-spacing:1px;text-transform:uppercase;display:block;margin-bottom:4px}
+
+/* Cards */
+.cards-row{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;margin-bottom:14px}
+.card{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;width:54px;height:76px;border-radius:10px;font-weight:900;font-size:0.95rem;cursor:pointer;transition:transform 0.15s,box-shadow 0.15s,opacity 0.2s;border:2px solid transparent;user-select:none;position:relative}
+.card:hover{transform:translateY(-8px);z-index:5}
+.card.ice{background:linear-gradient(145deg,#dbeafe,#bfdbfe);color:#1e40af;border-color:rgba(147,197,253,0.6);box-shadow:0 3px 10px rgba(30,64,175,0.12)}
+.card.fire{background:linear-gradient(145deg,#fee2e2,#fecaca);color:#991b1b;border-color:rgba(252,165,165,0.6);box-shadow:0 3px 10px rgba(153,27,27,0.12)}
+.card.special{background:linear-gradient(145deg,#f3e8ff,#e9d5ff);color:#6b21a8;border-color:rgba(196,181,253,0.6);box-shadow:0 3px 10px rgba(107,33,168,0.12);font-size:0.6rem;line-height:1.3;text-align:center;padding:4px}
+.card.x0{background:linear-gradient(145deg,#fef9c3,#fef08a);color:#a16207;border-color:rgba(251,191,36,0.5);box-shadow:0 3px 10px rgba(251,191,36,0.15)}
+.card.pm{background:linear-gradient(145deg,#ede9fe,#ddd6fe);color:#5b21b6;border-color:rgba(167,139,250,0.5)}
+.card.disabled{opacity:0.3;cursor:default;pointer-events:none}
+.card.disabled:hover{transform:none}
+.card.valid-hint{box-shadow:0 0 0 3px rgba(74,222,128,0.5),0 3px 10px rgba(30,64,175,0.12)}
+.card.invalid-shake{animation:shake 0.35s ease}
+.card.played{opacity:0.25;pointer-events:none;transform:scale(0.88)}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+
+/* Result box */
+.result-box{display:none;padding:10px 14px;border-radius:10px;font-size:0.88rem;margin-top:8px;font-weight:500;animation:fadeIn 0.3s ease}
+.result-box.success{background:rgba(74,222,128,0.12);border:1px solid rgba(74,222,128,0.35);color:#15803d}
+.result-box.error{background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);color:#991b1b}
+.result-box.info{background:rgba(0,119,182,0.08);border:1px solid rgba(0,119,182,0.2);color:#0c4a6e}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+
+/* Tag */
+.tag{display:inline-block;padding:2px 8px;border-radius:6px;font-size:0.7rem;font-weight:600;margin-right:4px;margin-bottom:4px}
+.tag-ice{background:rgba(0,119,182,0.1);color:var(--ice-1)}
+.tag-fire{background:rgba(194,65,12,0.1);color:var(--fire-1)}
+.tag-special{background:rgba(192,132,252,0.12);color:#6b21a8}
+
+/* Reset button */
+.reset-btn{display:inline-flex;align-items:center;gap:5px;margin-top:10px;padding:5px 12px;background:var(--surface);border:1px solid var(--border);border-radius:8px;font-size:0.75rem;color:var(--text-muted);cursor:pointer;font-family:inherit;transition:all 0.15s}
+.reset-btn:hover{color:var(--text);border-color:rgba(0,0,0,0.2)}
+
+/* Hand label */
+.hand-label{font-size:0.72rem;color:var(--text-muted);margin-bottom:6px;font-weight:500;letter-spacing:0.5px}
+
+/* Progress indicator */
+.progress-bar{width:100%;height:4px;background:rgba(0,0,0,0.06);border-radius:2px;overflow:hidden;margin-bottom:28px}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--ice-2),var(--purple),var(--fire-2));transition:width 0.4s ease;border-radius:2px}
+
+/* Last card button */
+.last-card-btn{display:none;padding:7px 14px;background:rgba(251,191,36,0.1);border:2px solid rgba(251,191,36,0.4);border-radius:10px;color:#a16207;font-weight:700;font-size:0.82rem;cursor:pointer;font-family:inherit;animation:pulse 1.2s ease-in-out infinite;transition:all 0.2s}
+.last-card-btn.show{display:inline-flex;align-items:center;gap:5px}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.65}}
+
+/* Badges row */
+.badge-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.badge{padding:3px 10px;border-radius:20px;font-size:0.72rem;font-weight:600;border:1px solid transparent}
+.badge-blue{background:rgba(0,119,182,0.08);color:var(--ice-1);border-color:rgba(0,119,182,0.2)}
+.badge-red{background:rgba(194,65,12,0.08);color:var(--fire-1);border-color:rgba(194,65,12,0.2)}
+.badge-purple{background:rgba(147,51,234,0.08);color:#7c3aed;border-color:rgba(147,51,234,0.2)}
+.badge-green{background:rgba(21,128,61,0.08);color:#15803d;border-color:rgba(21,128,61,0.2)}
+
+/* Opponent display */
+.opponent-row{display:flex;align-items:center;gap:8px;padding:7px 12px;border-radius:8px;background:rgba(0,0,0,0.03);border:1px solid var(--border);margin-bottom:6px;font-size:0.82rem}
+.opp-name{font-weight:600;min-width:50px}
+.opp-cards{display:flex;gap:3px;flex-wrap:wrap}
+.mini-card{width:22px;height:30px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:0.44rem;font-weight:700}
+.mini-ice{background:linear-gradient(145deg,#dbeafe,#bfdbfe);color:#1e40af}
+.mini-fire{background:linear-gradient(145deg,#fee2e2,#fecaca);color:#991b1b}
+.mini-special{background:linear-gradient(145deg,#f3e8ff,#e9d5ff);color:#6b21a8}
+
+@media(max-width:600px){.card{width:46px;height:66px;font-size:0.82rem}.card.special{font-size:0.52rem}}
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- Hero -->
+  <div class="hero">
+    <h1>📚 冰火大戰 — 規則教學試玩</h1>
+    <p>透過以下互動場景，逐一掌握每條遊戲規則</p>
+    <div style="display:flex;gap:8px;justify-content:center;margin-top:12px;flex-wrap:wrap">
+      <a href="index.html" class="back-link">← 規則說明</a>
+      <a href="game-full.html" class="back-link">🎮 完整遊戲</a>
+    </div>
+  </div>
+
+  <!-- Progress -->
+  <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+
+  <!-- ══ SECTION 1: Basic play rules ══ -->
+  <div class="sec-title">基本出牌規則</div>
+
+  <!-- Scenario 1: Positive to Negative -->
+  <div class="scenario" id="sc1">
+    <div class="sc-header">
+      <span class="sc-icon">🧊→🔥</span>
+      <div>
+        <div class="sc-title">正→負：改變正負</div>
+        <div class="badge-row">
+          <span class="badge badge-blue">基本規則</span>
+        </div>
+      </div>
+    </div>
+    <div class="sc-rule">
+      當累積總和為<b>正數</b>時，必須打出足夠大的<b>負數牌（火牌）</b>，令總和變為<b>負數或零</b>。<br>
+      小提示：總和 <b>+4</b> 時，需要打出 <b>-5 或更大的負數牌</b>（如 -5, -6… 令總和 &lt; 0）。
+    </div>
+    <span class="total-label">累積總和</span>
+    <div class="total-display positive" id="sc1-total">+4</div>
+    <div class="hand-label">你的手牌（點擊出牌）</div>
+    <div class="cards-row" id="sc1-cards"></div>
+    <div class="result-box" id="sc1-result"></div>
+    <button class="reset-btn" onclick="resetSc(1)">🔄 重置</button>
+  </div>
+
+  <!-- Scenario 2: Negative to Positive -->
+  <div class="scenario" id="sc2">
+    <div class="sc-header">
+      <span class="sc-icon">🔥→🧊</span>
+      <div>
+        <div class="sc-title">負→正：改變正負</div>
+        <div class="badge-row">
+          <span class="badge badge-red">基本規則</span>
+        </div>
+      </div>
+    </div>
+    <div class="sc-rule">
+      當累積總和為<b>負數</b>時，必須打出足夠大的<b>正數牌（冰牌）</b>，令總和變為<b>正數或零</b>。<br>
+      小提示：總和 <b>-6</b> 時，需要打出 <b>+7 或更大的正數牌</b>（令總和 &gt; 0）。
+    </div>
+    <span class="total-label">累積總和</span>
+    <div class="total-display negative" id="sc2-total">-6</div>
+    <div class="hand-label">你的手牌（點擊出牌）</div>
+    <div class="cards-row" id="sc2-cards"></div>
+    <div class="result-box" id="sc2-result"></div>
+    <button class="reset-btn" onclick="resetSc(2)">🔄 重置</button>
+  </div>
+
+  <!-- Scenario 3: Hit zero -->
+  <div class="scenario" id="sc3">
+    <div class="sc-header">
+      <span class="sc-icon">⭕</span>
+      <div>
+        <div class="sc-title">變為零：也是合法出牌</div>
+        <div class="badge-row">
+          <span class="badge badge-green">基本規則</span>
+        </div>
+      </div>
+    </div>
+    <div class="sc-rule">
+      無論目前總和正負，只要打出的牌令總和<b>剛好等於零</b>，也是合法出牌！<br>
+      試試打出 <b>-5</b>，令總和從 +5 變為 0。
+    </div>
+    <span class="total-label">累積總和</span>
+    <div class="total-display positive" id="sc3-total">+5</div>
+    <div class="hand-label">你的手牌（點擊出牌）</div>
+    <div class="cards-row" id="sc3-cards"></div>
+    <div class="result-box" id="sc3-result"></div>
+    <button class="reset-btn" onclick="resetSc(3)">🔄 重置</button>
+  </div>
+
+  <!-- Scenario 4: Total is zero - any card valid -->
+  <div class="scenario" id="sc4">
+    <div class="sc-header">
+      <span class="sc-icon">✅</span>
+      <div>
+        <div class="sc-title">總和為零：任何數字牌可出</div>
+        <div class="badge-row">
+          <span class="badge badge-green">特殊狀態</span>
+        </div>
+      </div>
+    </div>
+    <div class="sc-rule">
+      當累積總和為 <b>0</b> 時，可以打出<b>任何數字牌</b>！利用這機會打出手上難用的牌。
+    </div>
+    <span class="total-label">累積總和</span>
+    <div class="total-display zero" id="sc4-total">0</div>
+    <div class="hand-label">你的手牌（點擊任何一張）</div>
+    <div class="cards-row" id="sc4-cards"></div>
+    <div class="result-box" id="sc4-result"></div>
+    <button class="reset-btn" onclick="resetSc(4)">🔄 重置</button>
+  </div>
+
+  <!-- ══ SECTION 2: Digit rule & invalid play ══ -->
+  <div class="sec-title">進階出牌規則</div>
+
+  <!-- Scenario 5: Ones digit rule -->
+  <div class="scenario" id="sc5">
+    <div class="sc-header">
+      <span class="sc-icon">🔟</span>
+      <div>
+        <div class="sc-title">個位數規則：成功改變正負後取個位</div>
+        <div class="badge-row">
+          <span class="badge badge-purple">進階規則</span>
+        </div>
+      </div>
+    </div>
+    <div class="sc-rule">
+      成功改變正負後，若累積總和是<b>兩位數</b>，保留正/負號，只取<b>個位數</b>繼續遊戲。<br>
+      例子：-3 + 14 = +11 → 取個位 → <b>+1</b>。試試同時打出 3 張牌，令總和超過 ±10。
+    </div>
+    <span class="total-label">累積總和</span>
+    <div class="total-display negative" id="sc5-total">-3</div>
+    <div class="hand-label">選擇最多 3 張牌一起打出（一圈無人出牌情境）</div>
+    <div id="sc5-multi-info" style="font-size:0.78rem;color:#6b21a8;margin-bottom:8px">已選: 0 張，合計 +0</div>
+    <div class="cards-row" id="sc5-cards"></div>
+    <button class="reset-btn" style="background:rgba(107,33,168,0.08);border-color:rgba(107,33,168,0.2);color:#6b21a8;margin-right:8px;padding:7px 14px;border-radius:10px" onclick="playSc5()">✔ 出牌</button>
+    <button class="reset-btn" onclick="resetSc(5)">🔄 重置</button>
+    <div class="result-box" id="sc5-result"></div>
+  </div>
+
+  <!-- Scenario 6: Invalid play penalty -->
+  <div class="scenario" id="sc6">
+    <div class="sc-header">
+      <span class="sc-icon">❌</span>
+      <div>
+        <div class="sc-title">非法出牌：罰抽 3 張牌</div>
+        <div class="badge-row">
+          <span class="badge badge-red">懲罰規則</span>
+        </div>
+      </div>
+    </div>
+    <div class="sc-rule">
+      打出的牌<b>無法改變正負</b>，或計算出錯，即為<b>非法出牌</b>，罰抽 <b>3 張牌</b>。<br>
+      試試打出 -3（結果 +5-3=+2，仍為正數 ❌），體驗非法出牌的後果。
+    </div>
+    <span class="total-label">累積總和</span>
+    <div class="total-display positive" id="sc6-total">+5</div>
+    <div class="hand-label">你的手牌（試試打出 -3）</div>
+    <div class="cards-row" id="sc6-cards"></div>
+    <div class="result-box" id="sc6-result"></div>
+    <button class="reset-btn" onclick="resetSc(6)">🔄 重置</button>
+  </div>
+
+  <!-- Scenario 7: Cannot play - draw 1 -->
+  <div class="scenario" id="sc7">
+    <div class="sc-header">
+      <span class="sc-icon">🤚</span>
+      <div>
+        <div class="sc-title">無牌可出：抽 1 張牌</div>
+        <div class="badge-row">
+          <span class="badge badge-blue">無牌規則</span>
+        </div>
+      </div>
+    </div>
+    <div class="sc-rule">
+      若手牌全部<b>無法改變正負</b>（無合法出牌），從牌庫抽 <b>1 張牌</b>，繼續輪流。<br>
+      此時所有牌都打不出（總和 +8，你的牌都不夠大），只能 Pass！
+    </div>
+    <span class="total-label">累積總和</span>
+    <div class="total-display positive" id="sc7-total">+8</div>
+    <div class="hand-label">你的手牌（全部無效）</div>
+    <div class="cards-row" id="sc7-cards"></div>
+    <button class="reset-btn" style="background:rgba(194,65,12,0.08);border-color:rgba(194,65,12,0.2);color:var(--fire-1);margin-right:8px;padding:7px 14px;border-radius:10px" onclick="passSc7()">🤚 Pass（抽 1 張）</button>
+    <button class="reset-btn" onclick="resetSc(7)">🔄 重置</button>
+    <div class="result-box" id="sc7-result"></div>
+  </div>
+
+  <!-- ══ SECTION 3: Last Card ══ -->
+  <div class="sec-title">Last Card 規則</div>
+
+  <!-- Scenario 8: Last Card -->
+  <div class="scenario" id="sc8">
+    <div class="sc-header">
+      <span class="sc-icon">🗣️</span>
+      <div>
+        <div class="sc-title">Last Card：最後 1 張必須宣告！</div>
+        <div class="badge-row">
+          <span class="badge badge-purple">Last Card 規則</span>
+        </div>
+      </div>
+    </div>
+    <div class="sc-rule">
+      當你只剩<b>最後 1 張手牌</b>時，必須大喊 <b>"Last Card"</b>。忘記喊 → 罰抽 <b>1 張牌</b>。<br>
+      先按「Last Card」按鈕宣告，再打出手牌！（試試不喊就直接打牌，看看後果。）
+    </div>
+    <span class="total-label">累積總和</span>
+    <div class="total-display negative" id="sc8-total">-4</div>
+    <div id="sc8-lc-row" style="margin-bottom:10px">
+      <button class="last-card-btn show" id="sc8-lcbtn" onclick="declareLCSc8()">⚠️ Last Card！</button>
+      <span id="sc8-lc-status" style="font-size:0.8rem;color:var(--text-muted);margin-left:10px"></span>
+    </div>
+    <div class="hand-label">你的手牌（最後 1 張）</div>
+    <div class="cards-row" id="sc8-cards"></div>
+    <div class="result-box" id="sc8-result"></div>
+    <button class="reset-btn" onclick="resetSc(8)">🔄 重置</button>
+  </div>
+
+  <!-- ══ SECTION 4: Special cards ══ -->
+  <div class="sec-title">特殊牌效果</div>
+
+  <!-- Scenario 9: Multiply discard -->
+  <div class="scenario" id="sc9">
+    <div class="sc-header">
+      <span class="sc-icon">🎴</span>
+      <div>
+        <div class="sc-title">×(-2/3/4)：棄 1 張手牌</div>
+        <div class="badge-row">
+          <span class="badge badge-purple">乘牌效果</span>
+        </div>
+      </div>
+    </div>
+    <div class="sc-rule">
+      打出 <b>×(-2)、×(-3)、×(-4)</b> 後，可從手牌中<b>棄掉 1 張牌</b>（快速清手）。<br>
+      點擊 ×(-2) 牌，然後選擇要棄掉的牌。
+    </div>
+    <span class="total-label">累積總和</span>
+    <div class="total-display positive" id="sc9-total">+3</div>
+    <div class="hand-label">你的手牌</div>
+    <div class="cards-row" id="sc9-cards"></div>
+    <div id="sc9-discard-prompt" style="display:none;margin:10px 0;font-size:0.85rem;font-weight:600;color:#6b21a8">選擇要棄掉的牌：</div>
+    <div class="cards-row" id="sc9-discard-cards"></div>
+    <div class="result-box" id="sc9-result"></div>
+    <button class="reset-btn" onclick="resetSc(9)">🔄 重置</button>
+  </div>
+
+  <!-- Scenario 10: Divide draw 1 -->
+  <div class="scenario" id="sc10">
+    <div class="sc-header">
+      <span class="sc-icon">➗</span>
+      <div>
+        <div class="sc-title">÷(-2)：指定一位玩家抽 1 張</div>
+        <div class="badge-row">
+          <span class="badge badge-purple">除牌效果</span>
+        </div>
+      </div>
+    </div>
+    <div class="sc-rule">
+      打出 <b>÷(-2)</b> 後，<b>指定一位玩家抽 1 張牌</b>；總和由 ÷(-2) 計算：total ÷ (-2)。<br>
+      限制：打出後累積總和<b>必須為整數</b>（例如 +6 ÷ (-2) = -3 ✓；+5 ÷ (-2) = -2.5 ✗）。
+    </div>
+    <span class="total-label">累積總和</span>
+    <div class="total-display positive" id="sc10-total">+6</div>
+    <div class="hand-label">你的手牌</div>
+    <div class="cards-row" id="sc10-cards"></div>
+    <div id="sc10-opponents" style="margin:10px 0"></div>
+    <div id="sc10-pick-prompt" style="display:none;margin:6px 0;font-size:0.85rem;font-weight:600;color:#6b21a8">選擇要指定的對手：</div>
+    <div id="sc10-pick-btns" style="display:none;display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px"></div>
+    <div class="result-box" id="sc10-result"></div>
+    <button class="reset-btn" onclick="resetSc(10)">🔄 重置</button>
+  </div>
+
+  <!-- Scenario 11: Divide draw 2 -->
+  <div class="scenario" id="sc11">
+    <div class="sc-header">
+      <span class="sc-icon">➗➗</span>
+      <div>
+        <div class="sc-title">÷(-3)：指定一位玩家抽 2 張</div>
+        <div class="badge-row">
+          <span class="badge badge-purple">除牌效果</span>
+        </div>
+      </div>
+    </div>
+    <div class="sc-rule">
+      打出 <b>÷(-3)</b> 後，<b>指定一位玩家抽 2 張牌</b>；總和 = total ÷ (-3)（必須整數）。<br>
+      例子：-9 ÷ (-3) = +3 ✓。試打出 ÷(-3) 並指定對手。
+    </div>
+    <span class="total-label">累積總和</span>
+    <div class="total-display negative" id="sc11-total">-9</div>
+    <div class="hand-label">你的手牌</div>
+    <div class="cards-row" id="sc11-cards"></div>
+    <div id="sc11-opponents" style="margin:10px 0"></div>
+    <div id="sc11-pick-prompt" style="display:none;margin:6px 0;font-size:0.85rem;font-weight:600;color:#6b21a8">選擇要指定的對手（將抽 2 張）：</div>
+    <div id="sc11-pick-btns" style="display:none;display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px"></div>
+    <div class="result-box" id="sc11-result"></div>
+    <button class="reset-btn" onclick="resetSc(11)">🔄 重置</button>
+  </div>
+
+  <!-- Scenario 12: Divide all draw -->
+  <div class="scenario" id="sc12">
+    <div class="sc-header">
+      <span class="sc-icon">🎯</span>
+      <div>
+        <div class="sc-title">÷(-4)：所有對手各抽 1 張，你可再出 1 張</div>
+        <div class="badge-row">
+          <span class="badge badge-purple">除牌效果</span>
+        </div>
+      </div>
+    </div>
+    <div class="sc-rule">
+      打出 <b>÷(-4)</b> 後，<b>所有其他玩家各抽 1 張牌</b>；出牌者可<b>再多出 1 張牌</b>。<br>
+      總和 = total ÷ (-4)（必須整數）。例：-8 ÷ (-4) = +2 ✓。
+    </div>
+    <span class="total-label">累積總和</span>
+    <div class="total-display negative" id="sc12-total">-8</div>
+    <div class="hand-label">你的手牌</div>
+    <div class="cards-row" id="sc12-cards"></div>
+    <div id="sc12-opponents" style="margin:10px 0"></div>
+    <div class="result-box" id="sc12-result"></div>
+    <button class="reset-btn" onclick="resetSc(12)">🔄 重置</button>
+  </div>
+
+  <!-- Scenario 13: Multiply by zero -->
+  <div class="scenario" id="sc13">
+    <div class="sc-header">
+      <span class="sc-icon">0️⃣</span>
+      <div>
+        <div class="sc-title">×0：累積總和立即歸零</div>
+        <div class="badge-row">
+          <span class="badge badge-purple">乘零效果</span>
+        </div>
+      </div>
+    </div>
+    <div class="sc-rule">
+      打出 <b>×0</b> 後，累積總和<b>立即變為 0</b>，出牌者從牌庫<b>揭 1 張牌</b>重新計算。<br>
+      適合在局面對你不利時「清零重來」！
+    </div>
+    <span class="total-label">累積總和</span>
+    <div class="total-display positive" id="sc13-total">+7</div>
+    <div class="hand-label">你的手牌</div>
+    <div class="cards-row" id="sc13-cards"></div>
+    <div class="result-box" id="sc13-result"></div>
+    <button class="reset-btn" onclick="resetSc(13)">🔄 重置</button>
+  </div>
+
+  <!-- Scenario 14: Plus-minus standalone -->
+  <div class="scenario" id="sc14">
+    <div class="sc-header">
+      <span class="sc-icon">±</span>
+      <div>
+        <div class="sc-title">± 獨立打出：下一位玩家方向反轉</div>
+        <div class="badge-row">
+          <span class="badge badge-purple">加減牌效果</span>
+        </div>
+      </div>
+    </div>
+    <div class="sc-rule">
+      <b>獨立打出 ±</b>：下一位玩家的所有數字牌正負方向<b>由加法變減法</b>（直至再輪到你）。<br>
+      例如對手打 +5，實際效果是 -5；打 -3，實際是 +3。
+    </div>
+    <span class="total-label">累積總和</span>
+    <div class="total-display negative" id="sc14-total">-2</div>
+    <div class="hand-label">你的手牌</div>
+    <div class="cards-row" id="sc14-cards"></div>
+    <div id="sc14-next-turn" style="display:none;margin-top:12px">
+      <div class="hand-label" style="color:#6b21a8">⚡ 下一位（對手）的回合 — 正負已反轉！</div>
+      <div style="font-size:0.82rem;color:var(--text-muted);margin-bottom:8px">對手選擇打出 +5，但因 ± 效果，實際變為 -5</div>
+      <button style="padding:7px 18px;background:rgba(107,33,168,0.1);border:1px solid rgba(107,33,168,0.3);border-radius:10px;color:#6b21a8;font-weight:600;cursor:pointer;font-family:inherit" onclick="opponentPlaySc14()">▶ 對手出牌 +5（實際 -5）</button>
+    </div>
+    <div class="result-box" id="sc14-result"></div>
+    <button class="reset-btn" onclick="resetSc(14)">🔄 重置</button>
+  </div>
+
+  <!-- Scenario 15: Plus-minus with number card -->
+  <div class="scenario" id="sc15">
+    <div class="sc-header">
+      <span class="sc-icon">±🃏</span>
+      <div>
+        <div class="sc-title">± 配合數字牌：改變該牌正負</div>
+        <div class="badge-row">
+          <span class="badge badge-purple">加減牌效果</span>
+        </div>
+      </div>
+    </div>
+    <div class="sc-rule">
+      <b>± 配合數字牌</b>：同時打出 ± 和一張數字牌，可改變該數字牌的正負值。<br>
+      例如：± 配合 +7 → 實際以 -7 出牌；±  配合 -5 → 實際以 +5 出牌。<br>
+      先點選 ± 牌，再點選要配合的數字牌，然後點擊出牌。
+    </div>
+    <span class="total-label">累積總和</span>
+    <div class="total-display positive" id="sc15-total">+3</div>
+    <div id="sc15-multi-info" style="font-size:0.78rem;color:#6b21a8;margin-bottom:8px">請先選 ± 牌，再選數字牌</div>
+    <div class="hand-label">你的手牌</div>
+    <div class="cards-row" id="sc15-cards"></div>
+    <button class="reset-btn" style="background:rgba(107,33,168,0.08);border-color:rgba(107,33,168,0.2);color:#6b21a8;margin-right:8px;padding:7px 14px;border-radius:10px" onclick="playSc15()">✔ 出牌</button>
+    <button class="reset-btn" onclick="resetSc(15)">🔄 重置</button>
+    <div class="result-box" id="sc15-result"></div>
+  </div>
+
+  <!-- ══ SECTION 5: Speed round ══ -->
+  <div class="sec-title">⚡ 開局鬥快規則</div>
+
+  <!-- Scenario 16: Speed round -->
+  <div class="scenario" id="sc16">
+    <div class="sc-header">
+      <span class="sc-icon">⚡</span>
+      <div>
+        <div class="sc-title">鬥快出牌：第一張牌後全體搶出</div>
+        <div class="badge-row">
+          <span class="badge badge-red">速度規則</span>
+        </div>
+      </div>
+    </div>
+    <div class="sc-rule">
+      遊戲開始時揭開第一張牌作為起始總和，<b>所有玩家同時搶出</b>，反應最快者優先出牌，之後順時針輪流。<br>
+      倒數開始後，盡快點擊你的合法出牌！（5 秒內）
+    </div>
+    <div id="sc16-setup">
+      <button style="padding:10px 24px;background:linear-gradient(135deg,#e63946,#ff6b35);border:none;border-radius:12px;color:white;font-weight:700;font-size:0.95rem;cursor:pointer;font-family:inherit" onclick="startSpeedSc16()">⚡ 開始倒數！</button>
+    </div>
+    <div id="sc16-game" style="display:none">
+      <div style="display:flex;align-items:center;gap:16px;margin-bottom:14px;flex-wrap:wrap">
+        <div>
+          <span class="total-label">起始總和（揭開的牌）</span>
+          <div class="total-display positive" id="sc16-total">+5</div>
+        </div>
+        <div id="sc16-countdown" style="font-size:2.5rem;font-weight:900;color:#e63946;min-width:40px;text-align:center">5</div>
+      </div>
+      <div class="hand-label">你的手牌（搶先出牌！）</div>
+      <div class="cards-row" id="sc16-cards"></div>
+      <div id="sc16-msg" style="font-size:0.85rem;color:var(--text-muted);margin-top:8px"></div>
+    </div>
+    <div class="result-box" id="sc16-result"></div>
+    <button class="reset-btn" onclick="resetSc(16)" style="margin-top:10px">🔄 重置</button>
+  </div>
+
+  <div style="text-align:center;margin-top:40px;padding:24px;background:linear-gradient(135deg,rgba(0,119,182,0.06),rgba(192,132,252,0.06),rgba(194,65,12,0.06));border-radius:16px;border:1px solid var(--border)">
+    <div style="font-size:1.5rem;margin-bottom:8px">🎉</div>
+    <div style="font-weight:700;margin-bottom:6px">恭喜完成教學！</div>
+    <div style="font-size:0.88rem;color:var(--text-muted);margin-bottom:16px">你已了解所有遊戲規則，立即開始正式遊戲！</div>
+    <a href="game-full.html" style="display:inline-flex;align-items:center;gap:6px;padding:11px 28px;background:linear-gradient(135deg,var(--ice-1),var(--ice-2));border-radius:12px;text-decoration:none;color:white;font-weight:700;font-size:0.95rem">🎮 開始完整遊戲</a>
+  </div>
+
+</div>
+
+<script>
+// ── Utility ──
+function getSign(n){return n>0?'positive':n<0?'negative':'zero'}
+function fmt(n){return n>0?'+'+n:''+n}
+function ones(n){if(n===0)return 0;return(n>0?1:-1)*(Math.abs(n)%10||10)}
+function isValidPlay(total,delta){
+  if(total===0)return true;
+  const n=total+delta;
+  return getSign(n)!==getSign(total);
+}
+function mkCard(label,cssClass,onClick,disabled=false){
+  const d=document.createElement('div');
+  d.className='card '+cssClass+(disabled?' disabled':'');
+  d.textContent=label;
+  if(!disabled&&onClick)d.addEventListener('click',onClick);
+  return d;
+}
+function showResult(id,type,msg){
+  const el=document.getElementById(id+'-result');
+  el.className='result-box '+type;
+  el.textContent=msg;
+  el.style.display='block';
+  updateProgress();
+}
+function hideResult(id){
+  const el=document.getElementById(id+'-result');
+  el.style.display='none';
+}
+function updateTotalDisplay(id,val){
+  const el=document.getElementById(id+'-total');
+  el.textContent=fmt(val);
+  el.className='total-display '+getSign(val);
+}
+
+// Progress tracking
+const completed=new Set();
+function updateProgress(){
+  const pct=(completed.size/16)*100;
+  document.getElementById('progressFill').style.width=pct+'%';
+}
+
+// ── Scenario 1: Positive to Negative ──
+const sc1State={total:4,hand:[{v:1,css:'ice'},{v:-3,css:'fire'},{v:-5,css:'fire'},{v:2,css:'ice'},{v:-2,css:'fire'}]};
+function initSc1(){
+  const row=document.getElementById('sc1-cards');
+  row.innerHTML='';
+  sc1State.total=4;
+  updateTotalDisplay('sc1',4);hideResult('sc1');
+  sc1State.hand.forEach(c=>{
+    const btn=mkCard(fmt(c.v),c.css,()=>{
+      const newTotal=sc1State.total+c.v;
+      if(isValidPlay(sc1State.total,c.v)){
+        btn.classList.add('played');
+        sc1State.total=newTotal>9||(newTotal<-9&&newTotal!==0)?ones(newTotal):newTotal;
+        updateTotalDisplay('sc1',sc1State.total);
+        completed.add('sc1');
+        showResult('sc1','success','✅ 合法出牌！總和由 +4 → '+fmt(newTotal)+(Math.abs(newTotal)>9?' → 取個位 → '+fmt(sc1State.total):'')+'。成功令正數變負數！');
+      }else{
+        btn.classList.add('invalid-shake');
+        setTimeout(()=>btn.classList.remove('invalid-shake'),400);
+        showResult('sc1','error','❌ 非法出牌！+4 + '+fmt(c.v)+' = '+fmt(newTotal)+'，仍為正數，未改變正負。需要打出 -5 或更大的負數！');
+      }
+    });
+    row.appendChild(btn);
+  });
+}
+function resetSc(n){eval('initSc'+n+'()');}
+
+// ── Scenario 2: Negative to Positive ──
+function initSc2(){
+  const row=document.getElementById('sc2-cards');
+  row.innerHTML='';
+  updateTotalDisplay('sc2',-6);hideResult('sc2');
+  [{v:3,css:'ice'},{v:8,css:'ice'},{v:-2,css:'fire'},{v:5,css:'ice'},{v:-4,css:'fire'}].forEach(c=>{
+    const btn=mkCard(fmt(c.v),c.css,()=>{
+      const newTotal=-6+c.v;
+      if(isValidPlay(-6,c.v)){
+        btn.classList.add('played');
+        completed.add('sc2');
+        showResult('sc2','success','✅ 合法出牌！-6 + '+fmt(c.v)+' = '+fmt(newTotal)+'。成功令負數變正數！');
+      }else{
+        btn.classList.add('invalid-shake');setTimeout(()=>btn.classList.remove('invalid-shake'),400);
+        showResult('sc2','error','❌ 非法出牌！-6 + '+fmt(c.v)+' = '+fmt(newTotal)+'，仍為負數，未改變正負。需要打出 +7 或更大的正數！');
+      }
+    });
+    row.appendChild(btn);
+  });
+}
+
+// ── Scenario 3: Hit Zero ──
+function initSc3(){
+  const row=document.getElementById('sc3-cards');
+  row.innerHTML='';
+  updateTotalDisplay('sc3',5);hideResult('sc3');
+  [{v:-5,css:'fire'},{v:-7,css:'fire'},{v:3,css:'ice'},{v:-2,css:'fire'},{v:4,css:'ice'}].forEach(c=>{
+    const btn=mkCard(fmt(c.v),c.css,()=>{
+      const newTotal=5+c.v;
+      if(newTotal===0){
+        btn.classList.add('played');completed.add('sc3');
+        showResult('sc3','success','✅ 合法出牌！+5 + '+fmt(c.v)+' = 0。剛好歸零，合法！下一位可出任何數字牌。');
+      }else if(isValidPlay(5,c.v)){
+        btn.classList.add('played');completed.add('sc3');
+        showResult('sc3','success','✅ 合法出牌！+5 + '+fmt(c.v)+' = '+fmt(newTotal)+'。改變了正負（試試 -5 令總和等於零）。');
+      }else{
+        btn.classList.add('invalid-shake');setTimeout(()=>btn.classList.remove('invalid-shake'),400);
+        showResult('sc3','error','❌ 非法出牌！+5 + '+fmt(c.v)+' = '+fmt(newTotal)+'，仍為正數。試試 -5（令總和等於 0）！');
+      }
+    });
+    row.appendChild(btn);
+  });
+}
+
+// ── Scenario 4: Zero total ──
+function initSc4(){
+  const row=document.getElementById('sc4-cards');
+  row.innerHTML='';
+  updateTotalDisplay('sc4',0);hideResult('sc4');
+  [{v:2,css:'ice'},{v:5,css:'ice'},{v:-3,css:'fire'},{v:1,css:'ice'},{v:-7,css:'fire'}].forEach(c=>{
+    const btn=mkCard(fmt(c.v),c.css,()=>{
+      btn.classList.add('played');completed.add('sc4');
+      const newTotal=ones(0+c.v);
+      showResult('sc4','success','✅ 合法出牌！總和為 0 時任何數字牌都可打出。0 + '+fmt(c.v)+' = '+fmt(newTotal)+'。');
+    });
+    row.appendChild(btn);
+  });
+}
+
+// ── Scenario 5: Ones digit ──
+const sc5State={total:-3,sel:[],hand:[{v:5,css:'ice'},{v:5,css:'ice'},{v:7,css:'ice'},{v:-4,css:'fire'},{v:4,css:'ice'}]};
+function initSc5(){
+  sc5State.total=-3;sc5State.sel=[];
+  updateTotalDisplay('sc5',-3);hideResult('sc5');
+  document.getElementById('sc5-multi-info').textContent='已選: 0 張，合計 +0';
+  const row=document.getElementById('sc5-cards');
+  row.innerHTML='';
+  sc5State.hand.forEach((c,i)=>{
+    const btn=mkCard(fmt(c.v),c.css,()=>{
+      if(sc5State.sel.includes(i)){
+        sc5State.sel=sc5State.sel.filter(x=>x!==i);
+        btn.classList.remove('sel');
+      }else if(sc5State.sel.length<3){
+        sc5State.sel.push(i);btn.classList.add('sel');
+      }
+      const sum=sc5State.sel.reduce((a,idx)=>a+sc5State.hand[idx].v,0);
+      document.getElementById('sc5-multi-info').textContent='已選: '+sc5State.sel.length+' 張，合計 '+fmt(sum);
+    });
+    btn.style.outline='none';
+    row.appendChild(btn);
+  });
+}
+function playSc5(){
+  if(sc5State.sel.length===0){showResult('sc5','error','請先點選 1-3 張牌！');return;}
+  const sum=sc5State.sel.reduce((a,i)=>a+sc5State.hand[i].v,0);
+  const raw=sc5State.total+sum;
+  if(isValidPlay(sc5State.total,sum)){
+    const final=ones(raw);
+    const twoDigit=Math.abs(raw)>9;
+    completed.add('sc5');
+    showResult('sc5','success','✅ 合法出牌！'+fmt(sc5State.total)+' + ('+sc5State.sel.map(i=>fmt(sc5State.hand[i].v)).join('+')+'='+ fmt(sum)+') = '+fmt(raw)+(twoDigit?' → 兩位數，取個位 → '+fmt(final):'')+'。最終總和：'+fmt(final));
+    sc5State.sel.forEach(i=>{const btn=document.getElementById('sc5-cards').children[i];btn.classList.add('played');});
+    sc5State.total=final;updateTotalDisplay('sc5',final);
+    sc5State.sel=[];document.getElementById('sc5-multi-info').textContent='已出牌完成';
+  }else{
+    showResult('sc5','error','❌ 非法出牌！'+fmt(sc5State.total)+' + '+fmt(sum)+' = '+fmt(raw)+'，正負未改變。試選 +5+5+7=+17，令 -3+17=+14 → 取個位 +4！');
+  }
+}
+
+// ── Scenario 6: Invalid play ──
+function initSc6(){
+  const row=document.getElementById('sc6-cards');
+  row.innerHTML='';
+  updateTotalDisplay('sc6',5);hideResult('sc6');
+  [{v:2,css:'ice'},{v:-3,css:'fire'},{v:-7,css:'fire'},{v:1,css:'ice'},{v:-9,css:'fire'}].forEach(c=>{
+    const btn=mkCard(fmt(c.v),c.css,()=>{
+      const newTotal=5+c.v;
+      if(isValidPlay(5,c.v)){
+        btn.classList.add('played');completed.add('sc6');
+        showResult('sc6','success','✅ 合法出牌！+5 + '+fmt(c.v)+' = '+fmt(newTotal)+'。成功改變正負！');
+      }else{
+        btn.classList.add('invalid-shake');setTimeout(()=>btn.classList.remove('invalid-shake'),400);
+        completed.add('sc6');
+        showResult('sc6','error','❌ 非法出牌！+5 + '+fmt(c.v)+' = '+fmt(newTotal)+'，仍為正數，正負未改變。罰抽 3 張牌！試試 -7 或 -9。');
+      }
+    });
+    row.appendChild(btn);
+  });
+}
+
+// ── Scenario 7: Cannot play ──
+function initSc7(){
+  const row=document.getElementById('sc7-cards');
+  row.innerHTML='';
+  updateTotalDisplay('sc7',8);hideResult('sc7');
+  [{v:-1,css:'fire'},{v:-2,css:'fire'},{v:3,css:'ice'},{v:5,css:'ice'},{v:-3,css:'fire'}].forEach(c=>{
+    row.appendChild(mkCard(fmt(c.v),c.css,null,true));
+  });
+}
+function passSc7(){
+  completed.add('sc7');
+  showResult('sc7','info','🤚 Pass！你從牌庫抽了 1 張牌。（總和 +8，你的所有牌：-1→+7，-2→+6，+3→+11→+1，均未能令正數變負，故無法出牌。）');
+}
+
+// ── Scenario 8: Last Card ──
+let sc8LCDeclared=false;
+function initSc8(){
+  sc8LCDeclared=false;
+  updateTotalDisplay('sc8',-4);hideResult('sc8');
+  document.getElementById('sc8-lc-status').textContent='';
+  document.getElementById('sc8-lcbtn').style.opacity='1';
+  document.getElementById('sc8-lcbtn').disabled=false;
+  const row=document.getElementById('sc8-cards');
+  row.innerHTML='';
+  const c={v:5,css:'ice'};
+  const btn=mkCard(fmt(c.v),c.css,()=>{
+    if(!sc8LCDeclared){
+      btn.classList.add('invalid-shake');setTimeout(()=>btn.classList.remove('invalid-shake'),400);
+      btn.classList.add('played');
+      completed.add('sc8');
+      showResult('sc8','error','⚠️ 忘記宣告 Last Card！罰抽 1 張牌。記住：最後 1 張手牌時，必須先按「Last Card」再出牌！');
+    }else{
+      btn.classList.add('played');completed.add('sc8');
+      showResult('sc8','success','✅ 正確！已宣告 Last Card，順利打出最後 1 張牌。-4 + 5 = +1，遊戲繼續！');
+    }
+  });
+  row.appendChild(btn);
+}
+function declareLCSc8(){
+  sc8LCDeclared=true;
+  document.getElementById('sc8-lc-status').textContent='✅ 已宣告！現在可以打出最後一張牌';
+  document.getElementById('sc8-lcbtn').style.opacity='0.4';
+  document.getElementById('sc8-lcbtn').disabled=true;
+}
+
+// ── Scenario 9: Multiply discard ──
+let sc9MultPlayed=false;
+function initSc9(){
+  sc9MultPlayed=false;
+  updateTotalDisplay('sc9',3);hideResult('sc9');
+  document.getElementById('sc9-discard-prompt').style.display='none';
+  document.getElementById('sc9-discard-cards').innerHTML='';
+  const row=document.getElementById('sc9-cards');
+  row.innerHTML='';
+  const hand=[{v:'×(-2)',css:'special',isMult:true},{v:1,css:'ice'},{v:-4,css:'fire'},{v:6,css:'ice'},{v:-2,css:'fire'}];
+  hand.forEach((c,i)=>{
+    const label=typeof c.v==='string'?c.v:fmt(c.v);
+    const btn=mkCard(label,c.css,()=>{
+      if(c.isMult){
+        btn.classList.add('played');
+        sc9MultPlayed=true;
+        // Show discard selection
+        document.getElementById('sc9-discard-prompt').style.display='block';
+        const dRow=document.getElementById('sc9-discard-cards');
+        dRow.innerHTML='';
+        hand.forEach((dc,di)=>{
+          if(di===i)return;
+          const dlabel=typeof dc.v==='string'?dc.v:fmt(dc.v);
+          const dbtn=mkCard(dlabel,dc.css,()=>{
+            dRow.querySelectorAll('.card').forEach(b=>b.classList.remove('sel'));
+            dbtn.classList.add('sel');
+            dbtn.classList.add('played');
+            document.getElementById('sc9-discard-prompt').style.display='none';
+            completed.add('sc9');
+            showResult('sc9','success','✅ ×(-2) 打出後，選擇棄掉「'+dlabel+'」。此牌已從手牌移除，快速清手！總和維持 +3 不變。');
+          });
+          dRow.appendChild(dbtn);
+        });
+      }else if(!sc9MultPlayed){
+        showResult('sc9','info','提示：先點擊 ×(-2) 特殊牌，體驗棄牌效果！');
+      }
+    });
+    row.appendChild(btn);
+  });
+}
+
+// ── Scenario 10: Divide draw 1 ──
+let sc10DivPlayed=false;
+function initSc10(){
+  sc10DivPlayed=false;
+  updateTotalDisplay('sc10',6);hideResult('sc10');
+  document.getElementById('sc10-pick-prompt').style.display='none';
+  document.getElementById('sc10-pick-btns').style.display='none';
+  document.getElementById('sc10-pick-btns').innerHTML='';
+  const opps=[{name:'AI 1',count:5},{name:'AI 2',count:4}];
+  const oppArea=document.getElementById('sc10-opponents');
+  oppArea.innerHTML='';
+  opps.forEach(o=>{
+    const row=document.createElement('div');row.className='opponent-row';
+    row.innerHTML='<span class="opp-name">'+o.name+'</span><span style="font-size:0.75rem;color:var(--text-muted)">手牌：'+o.count+' 張</span>';
+    oppArea.appendChild(row);
+  });
+  const row=document.getElementById('sc10-cards');
+  row.innerHTML='';
+  [{v:'÷(-2)',css:'special',isDiv:true,dv:-2},{v:3,css:'ice'},{v:-5,css:'fire'},{v:4,css:'ice'}].forEach((c,i)=>{
+    const label=typeof c.v==='string'?c.v:fmt(c.v);
+    const btn=mkCard(label,c.css,()=>{
+      if(c.isDiv){
+        const newTotal=6/c.dv;
+        if(!Number.isInteger(newTotal)){showResult('sc10','error','❌ ÷(-2)：6 ÷ (-2) 結果為非整數，無法打出（此例可以打，結果為 -3）。');return;}
+        btn.classList.add('played');sc10DivPlayed=true;
+        // Show target selection
+        document.getElementById('sc10-pick-prompt').style.display='block';
+        const pbRow=document.getElementById('sc10-pick-btns');
+        pbRow.style.display='flex';pbRow.innerHTML='';
+        opps.forEach(o=>{
+          const pbtn=document.createElement('button');
+          pbtn.style.cssText='padding:7px 14px;background:rgba(107,33,168,0.08);border:1px solid rgba(107,33,168,0.3);border-radius:10px;color:#6b21a8;font-weight:600;cursor:pointer;font-family:inherit';
+          pbtn.textContent=o.name;
+          pbtn.onclick=()=>{
+            pbRow.style.display='none';
+            document.getElementById('sc10-pick-prompt').style.display='none';
+            o.count++;
+            oppArea.querySelectorAll('.opponent-row')[opps.indexOf(o)].innerHTML='<span class="opp-name">'+o.name+'</span><span style="font-size:0.75rem;color:#991b1b;font-weight:700">手牌：'+o.count+' 張（+1）</span>';
+            updateTotalDisplay('sc10',ones(newTotal));completed.add('sc10');
+            showResult('sc10','success','✅ ÷(-2) 打出！總和：+6 ÷ (-2) = -3。'+o.name+' 抽了 1 張牌。');
+          };
+          pbRow.appendChild(pbtn);
+        });
+      }else{
+        showResult('sc10','info','先點擊 ÷(-2) 特殊牌體驗效果！');
+      }
+    });
+    row.appendChild(btn);
+  });
+}
+
+// ── Scenario 11: Divide draw 2 ──
+let sc11DivPlayed=false;
+function initSc11(){
+  sc11DivPlayed=false;
+  updateTotalDisplay('sc11',-9);hideResult('sc11');
+  document.getElementById('sc11-pick-prompt').style.display='none';
+  document.getElementById('sc11-pick-btns').style.display='none';
+  document.getElementById('sc11-pick-btns').innerHTML='';
+  const opps=[{name:'AI 1',count:5},{name:'AI 2',count:3}];
+  const oppArea=document.getElementById('sc11-opponents');
+  oppArea.innerHTML='';
+  opps.forEach(o=>{
+    const row=document.createElement('div');row.className='opponent-row';
+    row.innerHTML='<span class="opp-name">'+o.name+'</span><span style="font-size:0.75rem;color:var(--text-muted)">手牌：'+o.count+' 張</span>';
+    oppArea.appendChild(row);
+  });
+  const row=document.getElementById('sc11-cards');
+  row.innerHTML='';
+  [{v:'÷(-3)',css:'special',isDiv:true,dv:-3},{v:2,css:'ice'},{v:-4,css:'fire'},{v:5,css:'ice'}].forEach((c,i)=>{
+    const label=typeof c.v==='string'?c.v:fmt(c.v);
+    const btn=mkCard(label,c.css,()=>{
+      if(c.isDiv){
+        const newTotal=-9/c.dv;
+        btn.classList.add('played');sc11DivPlayed=true;
+        document.getElementById('sc11-pick-prompt').style.display='block';
+        const pbRow=document.getElementById('sc11-pick-btns');
+        pbRow.style.display='flex';pbRow.innerHTML='';
+        opps.forEach(o=>{
+          const pbtn=document.createElement('button');
+          pbtn.style.cssText='padding:7px 14px;background:rgba(107,33,168,0.08);border:1px solid rgba(107,33,168,0.3);border-radius:10px;color:#6b21a8;font-weight:600;cursor:pointer;font-family:inherit';
+          pbtn.textContent=o.name;
+          pbtn.onclick=()=>{
+            pbRow.style.display='none';document.getElementById('sc11-pick-prompt').style.display='none';
+            o.count+=2;
+            oppArea.querySelectorAll('.opponent-row')[opps.indexOf(o)].innerHTML='<span class="opp-name">'+o.name+'</span><span style="font-size:0.75rem;color:#991b1b;font-weight:700">手牌：'+o.count+' 張（+2）</span>';
+            updateTotalDisplay('sc11',ones(newTotal));completed.add('sc11');
+            showResult('sc11','success','✅ ÷(-3) 打出！總和：-9 ÷ (-3) = +3。'+o.name+' 抽了 2 張牌！');
+          };
+          pbRow.appendChild(pbtn);
+        });
+      }else{showResult('sc11','info','先點擊 ÷(-3) 特殊牌體驗效果！');}
+    });
+    row.appendChild(btn);
+  });
+}
+
+// ── Scenario 12: Divide all draw ──
+function initSc12(){
+  updateTotalDisplay('sc12',-8);hideResult('sc12');
+  const opps=[{name:'AI 1',count:5},{name:'AI 2',count:4},{name:'AI 3',count:6}];
+  const oppArea=document.getElementById('sc12-opponents');
+  oppArea.innerHTML='';
+  opps.forEach(o=>{
+    const row=document.createElement('div');row.className='opponent-row';
+    row.id='sc12-opp-'+o.name.replace(' ','');
+    row.innerHTML='<span class="opp-name">'+o.name+'</span><span style="font-size:0.75rem;color:var(--text-muted)">手牌：'+o.count+' 張</span>';
+    oppArea.appendChild(row);
+  });
+  const row=document.getElementById('sc12-cards');
+  row.innerHTML='';
+  [{v:'÷(-4)',css:'special',isDivAll:true,dv:-4},{v:3,css:'ice'},{v:-5,css:'fire'},{v:2,css:'ice'},{v:-1,css:'fire'}].forEach((c,i)=>{
+    const label=typeof c.v==='string'?c.v:fmt(c.v);
+    const btn=mkCard(label,c.css,()=>{
+      if(c.isDivAll){
+        const newTotal=-8/c.dv;
+        btn.classList.add('played');
+        opps.forEach((o,oi)=>{
+          o.count++;
+          oppArea.querySelectorAll('.opponent-row')[oi].innerHTML='<span class="opp-name">'+o.name+'</span><span style="font-size:0.75rem;color:#991b1b;font-weight:700">手牌：'+o.count+' 張（+1）</span>';
+        });
+        updateTotalDisplay('sc12',ones(newTotal));completed.add('sc12');
+        showResult('sc12','success','✅ ÷(-4) 打出！總和：-8 ÷ (-4) = +2。所有對手各抽 1 張！你可以再多出 1 張牌！（此教學場景已重置你的額外機會）');
+      }else{showResult('sc12','info','先點擊 ÷(-4) 特殊牌體驗效果！');}
+    });
+    row.appendChild(btn);
+  });
+}
+
+// ── Scenario 13: Multiply by zero ──
+function initSc13(){
+  updateTotalDisplay('sc13',7);hideResult('sc13');
+  const row=document.getElementById('sc13-cards');
+  row.innerHTML='';
+  [{v:'×0',css:'x0',isZero:true},{v:2,css:'ice'},{v:-3,css:'fire'},{v:4,css:'ice'}].forEach(c=>{
+    const label=typeof c.v==='string'?c.v:fmt(c.v);
+    const btn=mkCard(label,c.css,()=>{
+      if(c.isZero){
+        btn.classList.add('played');
+        const drawn=Math.floor(Math.random()*9)+1;
+        updateTotalDisplay('sc13',0);completed.add('sc13');
+        showResult('sc13','success','✅ ×0 打出！累積總和立即歸零。你從牌庫揭了 1 張牌（'+fmt(drawn>5?drawn:-drawn)+'），以這張牌重新計算新的總和。');
+      }else{showResult('sc13','info','試試打出 ×0 特殊牌，令總和歸零！');}
+    });
+    row.appendChild(btn);
+  });
+}
+
+// ── Scenario 14: Plus-minus standalone ──
+let sc14SfActive=false;
+function initSc14(){
+  sc14SfActive=false;
+  updateTotalDisplay('sc14',-2);hideResult('sc14');
+  document.getElementById('sc14-next-turn').style.display='none';
+  const row=document.getElementById('sc14-cards');
+  row.innerHTML='';
+  [{v:'±',css:'pm',isPm:true},{v:3,css:'ice'},{v:-4,css:'fire'},{v:7,css:'ice'}].forEach(c=>{
+    const label=typeof c.v==='string'?c.v:fmt(c.v);
+    const btn=mkCard(label,c.css,()=>{
+      if(c.isPm){
+        btn.classList.add('played');sc14SfActive=true;
+        document.getElementById('sc14-next-turn').style.display='block';
+        showResult('sc14','info','± 打出！下一位玩家的正負方向已反轉。點擊下方按鈕看對手出牌效果。');
+      }else{showResult('sc14','info','先打出 ± 牌，體驗方向反轉效果！');}
+    });
+    row.appendChild(btn);
+  });
+}
+function opponentPlaySc14(){
+  const raw=-2+(-5);// opponent plays +5 but it's flipped to -5
+  const final=ones(raw);
+  updateTotalDisplay('sc14',final);completed.add('sc14');
+  showResult('sc14','success','✅ 對手出 +5，但因 ± 效果反轉為 -5！-2 + (-5) = -7 → 取個位 -7。從正數情境看：若原總和為 +2，±後對手 +5 變成 -5，+2+(-5)=-3，成功令正變負！');
+}
+
+// ── Scenario 15: Plus-minus with number card ──
+const sc15State={pmSel:null,numSel:null,hand:[{v:'±',css:'pm',isPm:true},{v:7,css:'ice'},{v:-5,css:'fire'},{v:3,css:'ice'},{v:-2,css:'fire'}]};
+function initSc15(){
+  sc15State.pmSel=null;sc15State.numSel=null;
+  updateTotalDisplay('sc15',3);hideResult('sc15');
+  document.getElementById('sc15-multi-info').textContent='請先選 ± 牌，再選數字牌';
+  const row=document.getElementById('sc15-cards');
+  row.innerHTML='';
+  sc15State.hand.forEach((c,i)=>{
+    const label=typeof c.v==='string'?c.v:fmt(c.v);
+    const btn=mkCard(label,c.css,()=>{
+      if(c.isPm){
+        sc15State.pmSel=i;
+        row.querySelectorAll('.card').forEach(b=>b.classList.remove('sel'));
+        btn.classList.add('sel');
+        document.getElementById('sc15-multi-info').textContent='± 已選！現在選擇要改變正負的數字牌';
+      }else{
+        if(sc15State.pmSel===null){
+          showResult('sc15','error','請先選 ± 牌！');return;
+        }
+        sc15State.numSel=i;
+        row.querySelectorAll('.card:not(.sel)').forEach(b=>b.classList.remove('sel'));
+        btn.classList.add('sel');
+        const flippedVal=-c.v;
+        document.getElementById('sc15-multi-info').textContent='已選：± 配合 '+fmt(c.v)+'，將作為 '+fmt(flippedVal)+' 打出';
+      }
+    });
+    row.appendChild(btn);
+  });
+}
+function playSc15(){
+  if(sc15State.pmSel===null){showResult('sc15','error','請先選 ± 牌！');return;}
+  if(sc15State.numSel===null){showResult('sc15','error','請再選一張數字牌！');return;}
+  const nc=sc15State.hand[sc15State.numSel];
+  const flippedVal=-nc.v;
+  const raw=3+flippedVal;
+  const final=ones(raw);
+  if(isValidPlay(3,flippedVal)){
+    completed.add('sc15');
+    showResult('sc15','success','✅ ± 配合 '+fmt(nc.v)+' → 實際以 '+fmt(flippedVal)+' 出牌！+3 + '+fmt(flippedVal)+' = '+fmt(raw)+(Math.abs(raw)>9?' → 取個位 → '+fmt(final):'')+'。成功改變正負！');
+    document.getElementById('sc15-cards').querySelectorAll('.sel').forEach(b=>b.classList.add('played'));
+    updateTotalDisplay('sc15',final);
+  }else{
+    showResult('sc15','error','❌ ± 配合 '+fmt(nc.v)+' → 以 '+fmt(flippedVal)+' 出牌，+3 + '+fmt(flippedVal)+' = '+fmt(raw)+'，正負未改變。試選 ± + +7（變 -7），令 +3+(-7)=-4！');
+  }
+}
+
+// ── Scenario 16: Speed round ──
+let sc16Timer=null;
+function initSc16(){
+  clearInterval(sc16Timer);
+  document.getElementById('sc16-setup').style.display='block';
+  document.getElementById('sc16-game').style.display='none';
+  hideResult('sc16');
+  document.getElementById('sc16-msg').textContent='';
+}
+function startSpeedSc16(){
+  document.getElementById('sc16-setup').style.display='none';
+  document.getElementById('sc16-game').style.display='block';
+  const startTotal=5;
+  updateTotalDisplay('sc16',startTotal);
+  let t=5;
+  document.getElementById('sc16-countdown').textContent=t;
+  // Build hand
+  const row=document.getElementById('sc16-cards');
+  row.innerHTML='';
+  [{v:-6,css:'fire'},{v:3,css:'ice'},{v:-8,css:'fire'},{v:2,css:'ice'},{v:-2,css:'fire'}].forEach(c=>{
+    const btn=mkCard(fmt(c.v),c.css,()=>{
+      if(isValidPlay(startTotal,c.v)){
+        clearInterval(sc16Timer);
+        btn.classList.add('played');
+        const newTotal=ones(startTotal+c.v);
+        updateTotalDisplay('sc16',newTotal);
+        completed.add('sc16');
+        document.getElementById('sc16-msg').textContent='';
+        showResult('sc16','success','⚡ 你最快！+5 + '+fmt(c.v)+' = '+fmt(startTotal+c.v)+(Math.abs(startTotal+c.v)>9?' → 個位 '+fmt(newTotal):'')+'。你贏得優先出牌權，遊戲正式開始順時針輪流！');
+      }else{
+        btn.classList.add('invalid-shake');setTimeout(()=>btn.classList.remove('invalid-shake'),400);
+        document.getElementById('sc16-msg').textContent='❌ 這張牌無法改變正負，快選其他牌！';
+      }
+    });
+    row.appendChild(btn);
+  });
+  sc16Timer=setInterval(()=>{
+    t--;
+    document.getElementById('sc16-countdown').textContent=t;
+    if(t<=0){
+      clearInterval(sc16Timer);
+      document.getElementById('sc16-countdown').textContent='⏰';
+      document.getElementById('sc16-msg').textContent='時間到！對手搶先出了 -8，總和 = -3。';
+      document.getElementById('sc16-cards').querySelectorAll('.card').forEach(b=>{b.style.pointerEvents='none';b.style.opacity='0.3';});
+      completed.add('sc16');
+      showResult('sc16','info','⚡ 沒搶到！對手 AI 搶先出了 -8 → +5+(-8)=-3。之後輪流繼續。試試重置再快點點！');
+    }
+  },1000);
+}
+
+// ── Initialize all scenarios ──
+function initAll(){
+  initSc1();initSc2();initSc3();initSc4();initSc5();initSc6();initSc7();
+  initSc8();initSc9();initSc10();initSc11();initSc12();initSc13();
+  initSc14();initSc15();initSc16();
+}
+initAll();
+</script>
+</body>
+</html>
