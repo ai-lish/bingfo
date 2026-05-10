@@ -108,7 +108,8 @@ canvas#bg{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-e
   <div id="setup">
     <h1>🧊🔥 冰火大戰</h1>
     <p class="subtitle">Ice & Fire · 完整版</p>
-    <p style="color:#555;font-size:0.84rem;margin-bottom:22px">選擇對戰人數（你 + AI）</p>
+    <p style="color:#555;font-size:0.84rem;margin-bottom:12px">選擇對戰人數（你 + AI）</p>
+    <div style="margin-bottom:16px"><a href="tutorial.html" style="font-size:0.78rem;color:#8b5cf6;text-decoration:none;padding:5px 12px;border:1px solid rgba(139,92,246,0.3);border-radius:8px;background:rgba(139,92,246,0.06)">📚 新手？先看教學試玩</a></div>
     <div class="player-select">
       <button class="pbtn" data-n="2">2 人</button>
       <button class="pbtn" data-n="3">3 人</button>
@@ -211,7 +212,7 @@ function buildDeck(){
 }
 
 let G={};
-function fs(){return{total:0,deck:[],discard:[],players:[],cur:0,phase:'setup',sf:false,passes:0,round:1,speedW:-1,speedP:false,lcd:false,winnersName:'',extra:false,sel:[],multi:false,winner:-1,pc:4,aiLock:false,tgtMode:null,discMode:null,pmMode:null,pmPC:null};}
+function fs(){return{total:0,deck:[],discard:[],players:[],cur:0,phase:'setup',sf:false,passes:0,round:1,speedW:-1,speedP:false,lcd:false,winnersName:'',extra:false,sel:[],multi:false,winner:-1,pc:4,aiLock:false,tgtMode:null,discMode:null,pmMode:null,pmPC:null,pmCardRef:null};}
 
 document.getElementById('startBtn').onclick=function(){
   const sel=document.querySelector('.pbtn.selected');
@@ -257,7 +258,8 @@ function toggleSel(idx){if(G.aiLock)return;const myHand=G.players[0].hand;const 
 function toggleLCB(){G.lcd=!G.lcd;$('lcb').classList.toggle('active',G.lcd);msg(G.lcd?'⚠️ 已宣告 Last Card':'Last Card 宣告已取消');}
 function doPass(){if(G.cur!==0||G.phase!=='turn')return;G.sel=[];G.passes=(G.passes||0)+1;msg('你 Pass 了');if(G.passes>=G.pc-1){G.multi=true;msg('全體 Pass！可一次出 1-3 張牌');}nextTurn();}
 function handlePlayBtn(){if(G.cur!==0||G.phase!=='turn')return;const myHand=G.players[0].hand;if(G.sel.length===0){msg('請先選擇要出的牌');return;}if(G.sel.length===1){const c=myHand[G.sel[0]];if(c.kind==='special'){handleSpecialPlay(c);}else{executePlay([c]);}}else{executePlay(G.sel.map(i=>myHand[i]));}}
-function handleSpecialPlay(c){switch(c.sub){case 'mult':G.discMode={card:c};openDiscModal();break;case 'div':G.tgtMode={card:c,count:1};openTgtModal('選擇目標玩家（抽 1 張）');break;case 'divAll':G.tgtMode={card:c,all:true};openTgtModal('確認：所有其他玩家各抽 1 張');break;case 'zero':executePlay([c]);break;case 'pm':openPmModal();break;}}
+function handleSpecialPlay(c){switch(c.sub){case 'mult':G.discMode={card:c};openDiscModal();break;case 'div':{const cnt=c.v===-2?1:2;G.tgtMode={card:c,count:cnt};openTgtModal('選擇目標玩家（抽 '+cnt+' 張）');break;}case 'divAll':executeDivAll(c);break;case 'zero':executePlay([c]);break;case 'pm':G.pmCardRef=c;openPmModal();break;}}
+function executeDivAll(card){const oldTotal=G.total;const newTotal=ones(oldTotal/card.v);G.players.forEach((p,pi)=>{if(pi!==G.cur){const d=drawCard(1);d.forEach(c=>p.hand.push(c));msg(p.name+' 抽了 1 張');}});G.extra=true;G.total=newTotal;G.discard.push(card);const p=G.players[G.cur];const idx=p.hand.indexOf(card);if(idx>=0)p.hand.splice(idx,1);G.passes=0;G.multi=false;msg(p.name+' 出了 '+cLabel(card)+' → 總和 = '+fmt(G.total)+'，所有對手各抽 1 張，可再多出一張！');renderAll();checkWin(G.cur);if(!G.winner){if(G.extra){G.extra=false;if(G.cur===0)msg('你可以再多出一張！');}else nextTurn();}}
 
 
 // ─── DISCARD MODAL ───
@@ -268,13 +270,15 @@ function confirmDisc(){if(!G._discSel){msg('請選擇要棄的牌');return;}cons
 // ─── TARGET MODAL ───
 function openTgtModal(title){$('tgtTitle').textContent=title;const area=$('tgtBtns');area.innerHTML='';G._tgtSel=null;G.players.forEach((p,idx)=>{if(idx===G.cur)return;const btn=document.createElement('button');btn.className='tb';btn.textContent=p.name;btn.onclick=()=>{area.querySelectorAll('.tb').forEach(b=>b.classList.remove('sel'));btn.classList.add('sel');G._tgtSel=idx;};area.appendChild(btn);});$('tgtMod').classList.add('active');}
 function closeTgt(){$('tgtMod').classList.remove('active');G._tgtSel=null;G.tgtMode=null;}
-function confirmTgt(){if(G._tgtSel===null){msg('請選擇目標玩家');return;}const tgt=G._tgtSel;const mode=G.tgtMode;$('tgtMod').classList.remove('active');G._tgtSel=null;G.tgtMode=null;const drawn=drawCard(mode.count||1);drawn.forEach(c=>G.players[tgt].hand.push(c));msg(G.players[tgt].name+' 抽了 '+drawn.length+' 張');if(mode.all){G.extra=true;msg(G.players[G.cur].name+' 可再多出一張！');}const oldTotal=G.total;const newTotal=ones((oldTotal+mode.card.v)/mode.card.v);msg('÷ 效果：'+fmt(oldTotal)+' → '+fmt(newTotal));G.total=newTotal;G.discard.push(mode.card);const p=G.players[G.cur];const idx=p.hand.indexOf(mode.card);if(idx>=0)p.hand.splice(idx,1);renderAll();checkWin(G.cur);if(!G.winner&&G.cur>0){setTimeout(()=>doAITurn(),800);}else if(!G.winner&&G.extra){G.extra=false;if(G.cur===0)msg('你可以再多出一張！');}}
+function confirmTgt(){if(G._tgtSel===null){msg('請選擇目標玩家');return;}const tgt=G._tgtSel;const mode=G.tgtMode;$('tgtMod').classList.remove('active');G._tgtSel=null;G.tgtMode=null;const drawn=drawCard(mode.count||1);drawn.forEach(c=>G.players[tgt].hand.push(c));msg(G.players[tgt].name+' 抽了 '+drawn.length+' 張');const oldTotal=G.total;const newTotal=ones(oldTotal/mode.card.v);msg('÷ 效果：'+fmt(oldTotal)+' → '+fmt(newTotal));G.total=newTotal;G.discard.push(mode.card);const p=G.players[G.cur];const idx=p.hand.indexOf(mode.card);if(idx>=0)p.hand.splice(idx,1);G.passes=0;G.multi=false;renderAll();checkWin(G.cur);if(!G.winner){if(G.cur>0){setTimeout(()=>doAITurn(),800);}else nextTurn();}}
 
 // ─── ± MODAL ───
 function openPmModal(){$('pmHint').textContent='選擇使用方式';$('pmNumCards').innerHTML='';$('pmNumCards').style.display='none';$('pmMod').classList.add('active');}
-function pmMode(mode){G.pmMode=mode;if(mode===0){$('pmMod').classList.remove('active');executePlay([{kind:'special',type:'±',sub:'pm',v:0}]);}else{$('pmHint').textContent='選擇要改變正負的數字牌';const area=$('pmNumCards');area.innerHTML='';area.style.display='flex';const myHand=G.players[0].hand;myHand.forEach((c,idx)=>{if(c.kind==='special')return;const btn=document.createElement('button');btn.className='dc';btn.innerHTML='<span style="font-size:0.62rem">'+(c.val>0?'+':'')+c.val+' → '+(c.val<0?'+':'-')+Math.abs(c.val)+'</span>';btn.onclick=()=>{area.querySelectorAll('.dc').forEach(b=>b.classList.remove('sel'));btn.classList.add('sel');G.pmPC={card:c,idx:idx};};area.appendChild(btn);});$('pmConfBtn').style.display='inline-block';}}
-function closePm(){$('pmMod').classList.remove('active');G.pmMode=null;G.pmPC=null;}
-function confirmPmCard(){if(!G.pmPC){msg('請選擇一張數字牌');return;}const {card,idx}=G.pmPC;$('pmMod').classList.remove('active');const flipped={...card,val:-card.val};G.discard.push({kind:'special',type:'±',sub:'pm',v:0});const p=G.players[0];p.hand.splice(p.hand.indexOf(card),1);G.total=ones(G.total+flipped.val);msg('± 改變 '+(card.val>0?'+':'')+card.val+' → '+fmt(flipped.val)+'，總和 = '+fmt(G.total));G.pmMode=null;G.pmPC=null;G.passes=0;G.sf=false;renderAll();checkWin(0);if(!G.winner)nextTurn();}
+function pmMode(mode){G.pmMode=mode;if(mode===0){$('pmMod').classList.remove('active');const pmCard=G.pmCardRef;G.pmCardRef=null;executePlay([pmCard]);}else{$('pmHint').textContent='選擇要改變正負的數字牌';const area=$('pmNumCards');area.innerHTML='';area.style.display='flex';const myHand=G.players[0].hand;myHand.forEach((c,idx)=>{if(c.kind==='special')return;const btn=document.createElement('button');btn.className='dc';btn.innerHTML='<span style="font-size:0.62rem">'+(c.val>0?'+':'')+c.val+' → '+(c.val<0?'+':'-')+Math.abs(c.val)+'</span>';btn.onclick=()=>{area.querySelectorAll('.dc').forEach(b=>b.classList.remove('sel'));btn.classList.add('sel');G.pmPC={card:c,idx:idx};};area.appendChild(btn);});$('pmConfBtn').style.display='inline-block';}}
+function closePm(){$('pmMod').classList.remove('active');G.pmMode=null;G.pmPC=null;G.pmCardRef=null;}
+function confirmPmCard(){if(!G.pmPC){msg('請選擇一張數字牌');return;}const {card}=G.pmPC;$('pmMod').classList.remove('active');const flipped={...card,val:-card.val};const p=G.players[0];// Remove the ± card from hand
+const pmCard=G.pmCardRef;if(pmCard){const pmIdx=p.hand.indexOf(pmCard);if(pmIdx>=0)p.hand.splice(pmIdx,1);G.discard.push(pmCard);}G.pmCardRef=null;// Remove the number card from hand
+p.hand.splice(p.hand.indexOf(card),1);G.total=ones(G.total===0?flipped.val:G.total+flipped.val);msg('± 改變 '+(card.val>0?'+':'')+card.val+' → '+fmt(flipped.val)+'，總和 = '+fmt(G.total));G.pmMode=null;G.pmPC=null;G.passes=0;G.sf=false;renderAll();checkWin(0);if(!G.winner)nextTurn();}
 
 // ─── EXECUTE PLAY ───
 function executePlay(cards){
@@ -289,16 +293,16 @@ function executePlay(cards){
       // ×(-2/3/4)：棄1張手牌，不改變總和
       msg(c.type+'！棄1張手牌');
     }else if(c.sub==='zero'){
-      G.total=0;msg(c.type+'！總和歸零！');drawCard(1).forEach(dc=>p.hand.push(dc));msg('你補了 1 張牌');
+      G.total=0;msg(c.type+'！總和歸零！');drawCard(1).forEach(dc=>p.hand.push(dc));msg(p.name+' 補了 1 張牌');
     }else if(c.sub==='pm'){G.sf=true;msg('± 效果開啟！下一位玩家方向反轉');}
   }else if(c.kind!=='special'){
-    let v=c.val;if(G.cur===0&&G.sf){v=-v;G.sf=false;}sumVal+=v;hasNumber=true;
+    let v=c.val;if(G.sf){v=-v;G.sf=false;}sumVal+=v;hasNumber=true;
   }
   });
-  if(hasNumber||cards.every(c=>c.kind==='special'&&c.sub!=='zero'&&c.sub!=='pm'&&c.sub!=='mult')){
+  if(hasNumber){
     if(G.total===0){G.total=sumVal;}else{G.total=ones(G.total+sumVal);}}
   if(divCards.length>0){
-    divCards.forEach(c=>{if(c.v===0)return;const dividend=oldTotal+c.v+sumVal;const q=dividend/c.v;const newTotal=Number.isInteger(q)?ones(Math.round(q)):NaN;msg(c.type+'：'+fmt(dividend)+' ÷ '+c.v+' = '+fmt(q)+' → '+fmt(newTotal));G.total=newTotal;});
+    divCards.forEach(c=>{if(c.v===0)return;const dividend=oldTotal+sumVal;const q=dividend/c.v;const newTotal=Number.isInteger(q)?ones(Math.round(q)):NaN;msg(c.type+'：'+fmt(dividend)+' ÷ '+c.v+' = '+fmt(q)+' → '+fmt(newTotal));G.total=newTotal;});
   }
   msg(p.name+' 出了 '+cards.map(c=>cLabel(c)).join('、')+' → 總和 = '+fmt(G.total));
   G.passes=0;G.multi=false;
@@ -313,23 +317,23 @@ function executePlay(cards){
 function nextTurn(){const oldCur=G.cur;G.cur=(G.cur+1)%G.pc;if(G.cur===0){G.round++;G.passes=0;G.multi=false;renderAll();msg('你的回合！');}else{renderAll();msg(G.players[G.cur].name+' 的回合');if(oldCur>0){setTimeout(()=>{if(G.phase==='turn'&&G.cur>0&&G.winner<0&&!G.aiLock)doAITurn();},800);}else{setTimeout(()=>{if(G.phase==='turn'&&G.cur>0&&G.winner<0&&!G.aiLock)doAITurn();},900);}}}
 
 // ─── CHECK WIN ───
-function checkWin(idx){const p=G.players[idx];if(G.total===0&&G.phase==='turn'){G.winner=idx;G.winnersName=p.name;setTimeout(()=>showWin(),500);}}
+function checkWin(idx){const p=G.players[idx];if(p.hand.length===0&&G.phase==='turn'){G.winner=idx;G.winnersName=p.name;setTimeout(()=>showWin(),500);}}
 
 function showWin(){const ov=$('winOv');ov.classList.add('active');const isMe=G.winner===0;recordWin(isMe);playWin();$('wt').textContent=isMe?'🏆 你贏了！':'🏆 '+G.winnersName+' 勝利！';$('wt').style.color=isMe?'#fbbf24':'#f0f4f8';const s=loadStats();$('ws').textContent='勝率：'+s.wins+'勝 '+s.losses+'敗 (共'+s.plays+'局)';}
 
 // ─── SPEED ROUND ───
 function showSpeed(){$('speedOv').classList.add('active');$('sval').textContent=fmt(G.total);$('scd').textContent='5';$('sres').textContent='';let t=5;G._speedTimer=setInterval(()=>{t--;$('scd').textContent=''+t;if(t<=0){clearInterval(G._speedTimer);if(G.phase==='speed'&&G.speedW<0){$('sres').textContent='時間到！';setTimeout(endSpeedNoWinner,1000);}}},1000);scheduleAIsSpeed();}
 function endSpeedNoWinner(){const allValid=G.players.slice(1).flatMap((p,i)=>{const vi=G.players.indexOf(p);return validCards(p.hand,G.total).map(c=>({card:c,pi:vi}));});if(allValid.length===0)return endSpeedRound();const numCards=allValid.filter(x=>x.card.kind!=='special');const valid=numCards.length>0?numCards:allValid;const pick=valid[Math.floor(Math.random()*valid.length)];G.speedW=pick.pi;const p=G.players[pick.pi];const idx=p.hand.indexOf(pick.card);if(idx>=0)p.hand.splice(idx,1);G.discard.push(pick.card);G.total=ones(G.total+pick.card.val);msg('⚡ '+p.name+' 打出 '+cLabel(pick.card)+' → '+fmt(G.total));endSpeedRound();}
-function speedPlay(){if(G.speedP)return;G.speedP=true;const myHand=G.players[0].hand;const valid=validCards(myHand,G.total);if(valid.length===0){msg('你沒有合法牌！');G.speedP=false;return;}$('sres').innerHTML='選擇要出的牌：<div style="display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin-top:10px" id="spCards"></div>';const area=$('spCards');valid.forEach(c=>{const btn=document.createElement('button');btn.className='gc '+cCss(c);btn.style.cssText='width:56px;height:78px;cursor:pointer';btn.textContent=cLabel(c);btn.onclick=()=>{G.speedW=0;const idx=myHand.indexOf(c);if(idx>=0)myHand.splice(idx,1);G.discard.push(c);G.total=ones(G.total+c.val);msg('⚡ 你打出 '+cLabel(c)+' → '+fmt(G.total));area.innerHTML='';$('sres').textContent='✅ 你最快！';setTimeout(endSpeedRound,1500);};area.appendChild(btn);});}
+function speedPlay(){if(G.speedP)return;G.speedP=true;const myHand=G.players[0].hand;const valid=validCards(myHand,G.total).filter(c=>c.kind!=='special'||c.sub==='pm');if(valid.length===0){msg('你沒有合法牌！');G.speedP=false;return;}$('sres').innerHTML='選擇要出的牌：<div style="display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin-top:10px" id="spCards"></div>';const area=$('spCards');valid.forEach(c=>{const btn=document.createElement('button');btn.className='gc '+cCss(c);btn.style.cssText='width:56px;height:78px;cursor:pointer';btn.textContent=cLabel(c);btn.onclick=()=>{G.speedW=0;const idx=myHand.indexOf(c);if(idx>=0)myHand.splice(idx,1);G.discard.push(c);if(c.kind==='special'&&c.sub==='pm'){G.sf=true;msg('⚡ 你打出 ± → ± 效果開啟');}else{G.total=ones(G.total+(c.val!==undefined?c.val:c.v));msg('⚡ 你打出 '+cLabel(c)+' → '+fmt(G.total));}area.innerHTML='';$('sres').textContent='✅ 你最快！';setTimeout(endSpeedRound,1500);};area.appendChild(btn);});}
 // 舊版 endSpeedRound（已棄用，由下方新版取代）
 
 // ─── AI ───
 function scheduleAIsSpeed(){G.players.forEach((p,idx)=>{if(idx===0)return;setTimeout(()=>doAISpeed(idx),Math.random()*4000+500);});}
 function doAISpeed(idx){if(G.phase!=='speed'||G.speedP||G.speedW>=0)return;const p=G.players[idx];// Speed phase: only number cards and ± are valid (÷ and × break the total calculation)
-const speedValid=p.hand.filter(c=>c.kind!=='special'||c.sub==='pm');if(speedValid.length===0||Math.random()<0.3)return;const c=speedValid[Math.floor(Math.random()*speedValid.length)];const ci=p.hand.indexOf(c);if(ci>=0)p.hand.splice(ci,1);G.discard.push(c);if(c.kind==='special'){if(c.sub==='pm'){G.sf=true;msg('⚡ '+p.name+' 打出 ± → '+fmt(G.total)+' (± 效果) ');}else{G.total=ones(G.total+c.val);msg('⚡ '+p.name+' 打出 '+cLabel(c)+' → '+fmt(G.total));}}else{G.total=ones(G.total+c.val);msg('⚡ '+p.name+' 打出 '+cLabel(c)+' → '+fmt(G.total));}G.speedW=idx;endSpeedRound();}
+const speedValid=p.hand.filter(c=>{if(c.kind==='special')return c.sub==='pm';return canPlay(c,G.total,p.hand.length,G.sf);});if(speedValid.length===0||Math.random()<0.3)return;const c=speedValid[Math.floor(Math.random()*speedValid.length)];const ci=p.hand.indexOf(c);if(ci>=0)p.hand.splice(ci,1);G.discard.push(c);if(c.kind==='special'){if(c.sub==='pm'){G.sf=true;msg('⚡ '+p.name+' 打出 ± → ± 效果開啟');}}else{G.total=ones(G.total+c.val);msg('⚡ '+p.name+' 打出 '+cLabel(c)+' → '+fmt(G.total));}G.speedW=idx;endSpeedRound();}
 
 function doAITurn(){try{if(G.phase!=='turn'||G.cur===0||G.winner>=0)return;if(G.aiLock)return;G.aiLock=true;const p=G.players[G.cur];const valid=validCards(p.hand,G.total,G.sf);if(valid.length===0){G.passes=(G.passes||0)+1;msg(p.name+' Pass 了');if(G.passes>=G.pc-1){G.multi=true;msg('全體 Pass！可一次出多張');}nextTurn();G.aiLock=false;return;}let chosen=valid[Math.floor(Math.random()*valid.length)];if(chosen.kind==='special'){chosen=chooseSpecialAI(chosen,p,valid);}if(!chosen){G.passes++;msg(p.name+' Pass 了');nextTurn();G.aiLock=false;return;}// Execute play SYNCHRONOUSLY (no setTimeout) — duplicate executePlay logic for AI
-const idx=p.hand.indexOf(chosen);if(idx>=0)p.hand.splice(idx,1);G.discard.push(chosen);const oldTotal=G.total;const isDiv=chosen.kind==='special'&&(chosen.sub==='div'||chosen.sub==='divAll');let sumVal=0,hasNumber=false;if(chosen.kind==='special'&&!isDiv){if(chosen.sub==='mult')msg(chosen.type+'！棄1張手牌');else if(chosen.sub==='zero'){G.total=0;msg(chosen.type+'！總和歸零！');drawCard(1).forEach(dc=>p.hand.push(dc));}else if(chosen.sub==='pm'){G.sf=true;msg('± 效果開啟！');}}else{let v=chosen.val;if(G.cur===0&&G.sf){v=-v;G.sf=false;}sumVal+=v;hasNumber=true;}if(hasNumber||(chosen.kind==='special'&&!['zero','pm','mult'].includes(chosen.sub))){if(G.total===0)G.total=sumVal;else G.total=ones(G.total+sumVal);}if(isDiv){if(chosen.v===0){G.total=G.total;msg(chosen.type+'（ ÷0 無效，總和不變）');}else{const q=oldTotal/chosen.v;if(!Number.isInteger(q)){G.total=NaN;msg(chosen.type+'：'+fmt(oldTotal)+' ÷ '+chosen.v+' = '+fmt(q)+'（非整數！）');}else{G.total=ones(Math.round(q));msg(chosen.type+'：'+fmt(oldTotal)+' ÷ '+chosen.v+' = '+fmt(q));}}}console.log('[AI play] oldTotal='+oldTotal+' chosen='+cLabel(chosen)+' newTotal='+G.total);msg(p.name+' 出了 '+cLabel(chosen)+' → 總和 = '+fmt(G.total));G.passes=0;G.multi=false;renderAll();checkWin(G.cur);if(!G.winner){if(G.extra){G.extra=false;msg(p.name+' 可以再多出一張！');}else{nextTurn();}}G.aiLock=false;}catch(e){console.error('AI error:',e);G.aiLock=false;}}
+const idx=p.hand.indexOf(chosen);if(idx>=0)p.hand.splice(idx,1);G.discard.push(chosen);const oldTotal=G.total;const isDiv=chosen.kind==='special'&&chosen.sub==='div';const isDivAll=chosen.kind==='special'&&chosen.sub==='divAll';let sumVal=0,hasNumber=false;if(chosen.kind==='special'&&!isDiv&&!isDivAll){if(chosen.sub==='mult')msg(chosen.type+'！棄1張手牌');else if(chosen.sub==='zero'){G.total=0;msg(chosen.type+'！總和歸零！');drawCard(1).forEach(dc=>p.hand.push(dc));}else if(chosen.sub==='pm'){G.sf=true;msg('± 效果開啟！');}}else if(!isDiv&&!isDivAll){let v=chosen.val;if(G.sf){v=-v;G.sf=false;}sumVal+=v;hasNumber=true;}if(hasNumber){if(G.total===0)G.total=sumVal;else G.total=ones(G.total+sumVal);}if(isDiv||isDivAll){if(chosen.v===0){msg(chosen.type+'（ ÷0 無效，總和不變）');}else{const q=oldTotal/chosen.v;if(!Number.isInteger(q)){G.total=NaN;msg(chosen.type+'：'+fmt(oldTotal)+' ÷ '+chosen.v+' = '+fmt(q)+'（非整數！）');}else{G.total=ones(Math.round(q));msg(chosen.type+'：'+fmt(oldTotal)+' ÷ '+chosen.v+' = '+fmt(G.total));}if(isDivAll){G.players.forEach((pl,pi)=>{if(pi!==G.cur){const d=drawCard(1);d.forEach(c=>pl.hand.push(c));msg(pl.name+' 抽了 1 張');}});G.extra=true;}else{const tgtIdx=(G.cur+1)%G.pc;const cnt=chosen.v===-2?1:2;const drawn=drawCard(cnt);drawn.forEach(c=>G.players[tgtIdx].hand.push(c));msg(G.players[tgtIdx].name+' 抽了 '+cnt+' 張');}}}msg(p.name+' 出了 '+cLabel(chosen)+' → 總和 = '+fmt(G.total));G.passes=0;G.multi=false;renderAll();checkWin(G.cur);if(!G.winner){if(G.extra){G.extra=false;msg(p.name+' 可以再多出一張！');}else{nextTurn();}}G.aiLock=false;}catch(e){console.error('AI error:',e);G.aiLock=false;}}
 let _endSpeedActive=false;function endSpeedRound(){if(_endSpeedActive)return;_endSpeedActive=true;$('speedOv').classList.remove('active');clearInterval(G._speedTimer);G.phase='turn';G.cur=G.speedW>=0?G.speedW:0;G.sf=false;G.passes=0;renderAll();if(G.cur>0){setTimeout(()=>{if(G.phase==='turn'&&G.cur>0&&G.winner<0&&!G.aiLock){doAITurn();}_endSpeedActive=false;},900);}else{_endSpeedActive=false;msg('你的回合！');}}
 function chooseSpecialAI(c,p,valid){// Prefer ×0, then big numbers, then specials
 const numCards=valid.filter(x=>x.kind!=='special');if(numCards.length>0&&Math.random()>0.4)return null;// prefer number card
